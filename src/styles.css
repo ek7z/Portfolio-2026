@@ -1,0 +1,611 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --ink: #141414;
+  --paper: #fff8e2;
+  --paper-alt: #effcff;
+  --accent-yellow: #ffde59;
+  --accent-cyan: #87f6ff;
+  --accent-pink: #ff99b6;
+  --accent-green: #b8ff8f;
+  --accent-orange: #ffa54f;
+  --body-fg: #141414;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: 'Space Mono', monospace;
+  color: var(--body-fg);
+  transition:
+    background 260ms ease,
+    color 260ms ease;
+}
+
+body,
+body.paper-light {
+  --ink: #141414;
+  --paper: #fff8e2;
+  --paper-alt: #effcff;
+  --body-fg: #141414;
+  background:
+    radial-gradient(circle at 5% 8%, var(--accent-yellow) 0 9%, transparent 10%),
+    radial-gradient(circle at 96% 12%, var(--accent-cyan) 0 9%, transparent 10%),
+    radial-gradient(circle at 90% 88%, var(--accent-pink) 0 12%, transparent 13%),
+    linear-gradient(145deg, #fffef7 0%, #fffbeb 44%, #eefbff 100%);
+}
+
+body.paper-dark {
+  --ink: #f3ecdf;
+  --paper: #0f141f;
+  --paper-alt: #1a2231;
+  --body-fg: #f5efe4;
+  background:
+    radial-gradient(circle at 8% 10%, rgb(255 222 89 / 0.26) 0 10%, transparent 11%),
+    radial-gradient(circle at 94% 14%, rgb(135 246 255 / 0.24) 0 10%, transparent 11%),
+    radial-gradient(circle at 88% 88%, rgb(255 153 182 / 0.25) 0 13%, transparent 14%),
+    linear-gradient(145deg, #0a0f18 0%, #101725 50%, #132133 100%);
+}
+
+body.paper-dark app-root .noise-layer {
+  opacity: 0.085;
+}
+
+body.paper-dark app-root {
+  color: var(--body-fg);
+}
+
+body.paper-dark app-root .neo-card {
+  box-shadow: 7px 7px 0 rgb(2 6 12 / 0.82);
+}
+
+body.paper-dark app-root .top-nav,
+body.paper-dark app-root .window-card,
+body.paper-dark app-root .panel,
+body.paper-dark app-root .stack-belt,
+body.paper-dark app-root .avatar-col,
+body.paper-dark app-root .intro-side,
+body.paper-dark app-root .about-main,
+body.paper-dark app-root .about-snapshot,
+body.paper-dark app-root .snapshot-list li,
+body.paper-dark app-root .metric-card,
+body.paper-dark app-root .edu-block,
+body.paper-dark app-root .fact-card,
+body.paper-dark app-root .timeline-item,
+body.paper-dark app-root .exp-stat-card,
+body.paper-dark app-root .cert-stat-card,
+body.paper-dark app-root .cert-item,
+body.paper-dark app-root .skill-card,
+body.paper-dark app-root .project-stat-card,
+body.paper-dark app-root .project-card,
+body.paper-dark app-root .project-case,
+body.paper-dark app-root .project-hover-panel,
+body.paper-dark app-root .resume-modal,
+body.paper-dark app-root .resume-head,
+body.paper-dark app-root .resume-frame-wrap,
+body.paper-dark app-root .mobile-cta-bar {
+  background: #1a2231;
+}
+
+body.paper-dark app-root .window-head {
+  background: #151d2b;
+}
+
+body.paper-dark app-root .intro-col {
+  background: linear-gradient(145deg, #1b2434 0%, #202b3d 56%, #243347 100%);
+}
+
+body.paper-dark app-root #about.panel {
+  background: linear-gradient(160deg, #182131 0%, #1d2738 52%, #213247 100%);
+}
+
+body.paper-dark app-root #about.panel::before {
+  background: radial-gradient(circle, rgb(255 235 131 / 0.25) 0%, rgb(255 235 131 / 0) 72%);
+}
+
+body.paper-dark app-root .main-nav a,
+body.paper-dark app-root .theme-toggle-mobile,
+body.paper-dark app-root .menu-toggle,
+body.paper-dark app-root .contact-pill,
+body.paper-dark app-root .contact-icon,
+body.paper-dark app-root .hero-chip,
+body.paper-dark app-root .tool-chip,
+body.paper-dark app-root .project-index,
+body.paper-dark app-root .project-stage,
+body.paper-dark app-root .project-badge,
+body.paper-dark app-root .project-case-row > span,
+body.paper-dark app-root .exp-badges span,
+body.paper-dark app-root .snapshot-chip,
+body.paper-dark app-root .edu-period,
+body.paper-dark app-root .fact-mark,
+body.paper-dark app-root .cert-mark,
+body.paper-dark app-root .skill-icon,
+body.paper-dark app-root .neo-btn,
+body.paper-dark app-root .sep-line {
+  background: #283347;
+  box-shadow: 2px 2px 0 rgb(2 6 12 / 0.8);
+}
+
+body.paper-dark app-root .pill-phone {
+  background: linear-gradient(135deg, #4f4423 0%, #6a5a2d 100%);
+  color: #fff7d9;
+}
+
+body.paper-dark app-root .pill-mail {
+  background: linear-gradient(135deg, #214657 0%, #2c5b70 100%);
+  color: #e8fbff;
+}
+
+body.paper-dark app-root .pill-resume {
+  background: linear-gradient(135deg, #59314b 0%, #73405f 100%);
+  color: #ffe8f2;
+}
+
+body.paper-dark app-root .avatar-col .avatar-location,
+body.paper-dark app-root .avatar-social,
+body.paper-dark app-root .copy-phone .contact-copy-badge {
+  background: #f4efe5;
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 2px 2px 0 #070c14;
+}
+
+body.paper-dark app-root .avatar-social:hover {
+  background: #fff7de;
+}
+
+body.paper-dark app-root .copy-phone[aria-label='Phone number copied'] .contact-copy-badge {
+  background: #bdf79a;
+  color: #121212;
+}
+
+body.paper-dark app-root .hero-focus-wrap {
+  border-top-color: rgb(243 236 223 / 0.34);
+}
+
+body.paper-dark app-root .hero-focus-kicker {
+  color: rgb(245 239 228 / 0.82);
+}
+
+body.paper-dark app-root .hero-focus-card {
+  color: #f5efe4;
+  border-color: #101722;
+  box-shadow: 2px 2px 0 #070c14;
+}
+
+body.paper-dark app-root .hero-focus-card:nth-child(4n + 1) {
+  background: #5c4c25;
+}
+
+body.paper-dark app-root .hero-focus-card:nth-child(4n + 2) {
+  background: #1f4f60;
+}
+
+body.paper-dark app-root .hero-focus-card:nth-child(4n + 3) {
+  background: #5f3550;
+}
+
+body.paper-dark app-root .hero-focus-card:nth-child(4n + 4) {
+  background: #3b5d3a;
+}
+
+body.paper-dark app-root .hero-focus-index {
+  background: #f4efe5;
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 1px 1px 0 #070c14;
+}
+
+body.paper-dark app-root .hero-focus-card strong {
+  color: #f5efe4;
+}
+
+body.paper-dark app-root .about-main .panel-copy {
+  border-left-color: rgb(243 236 223 / 0.62);
+}
+
+body.paper-dark app-root .snapshot-list li:nth-child(odd) {
+  background: #1c2738;
+}
+
+body.paper-dark app-root .snapshot-list li:nth-child(even) {
+  background: #202d40;
+}
+
+body.paper-dark app-root .timeline-points li::before {
+  background: #2a3548;
+}
+
+body.paper-dark app-root .btn-yellow,
+body.paper-dark app-root .main-nav a.is-active,
+body.paper-dark app-root .work-pill,
+body.paper-dark app-root .sep-yellow .sep-label {
+  background: #ffe07a;
+  color: #121212;
+}
+
+body.paper-dark app-root .btn-cyan,
+body.paper-dark app-root .chip-cyan,
+body.paper-dark app-root .sep-cyan .sep-label {
+  background: #8debf4;
+  color: #121212;
+}
+
+body.paper-dark app-root .btn-pink,
+body.paper-dark app-root .sep-pink .sep-label {
+  background: #f8a9c5;
+  color: #121212;
+}
+
+body.paper-dark app-root .chip-green {
+  background: #bdf79a;
+  color: #121212;
+}
+
+body.paper-dark app-root .stat-yellow,
+body.paper-dark app-root .metric-yellow,
+body.paper-dark app-root .tone-yellow {
+  background: #ffe07a;
+  color: #121212;
+}
+
+body.paper-dark app-root .stat-cyan,
+body.paper-dark app-root .metric-cyan,
+body.paper-dark app-root .tone-cyan {
+  background: #8debf4;
+  color: #121212;
+}
+
+body.paper-dark app-root .stat-pink,
+body.paper-dark app-root .metric-pink,
+body.paper-dark app-root .tone-pink {
+  background: #f8a9c5;
+  color: #121212;
+}
+
+body.paper-dark app-root .tone-green {
+  background: #bdf79a;
+  color: #121212;
+}
+
+body.paper-dark app-root .project-yellow::before,
+body.paper-dark app-root .timeline-freelance::before,
+body.paper-dark app-root .fact-yellow::before,
+body.paper-dark app-root .cert-item::before {
+  background: #ffd74d;
+}
+
+body.paper-dark app-root .project-cyan::before,
+body.paper-dark app-root .timeline-ops::before,
+body.paper-dark app-root .fact-cyan::before,
+body.paper-dark app-root .cert-item:nth-child(even)::before {
+  background: #4ed0df;
+}
+
+body.paper-dark app-root .project-green::before,
+body.paper-dark app-root .timeline-support::before,
+body.paper-dark app-root .fact-green::before {
+  background: #8de66d;
+}
+
+body.paper-dark app-root .project-pink::before,
+body.paper-dark app-root .fact-pink::before {
+  background: #f688ad;
+}
+
+body.paper-dark app-root .contact-kicker,
+body.paper-dark app-root .snapshot-list span,
+body.paper-dark app-root .project-preview-row > span,
+body.paper-dark app-root .cert-meta {
+  color: rgb(245 239 228 / 0.88);
+}
+
+body.paper-dark app-root .project-hover-panel {
+  background: rgb(27 36 50 / 0.98);
+}
+
+body.paper-dark app-root .main-nav a {
+  background: #25344d !important;
+  color: #f5efe4 !important;
+  border-color: #101722 !important;
+  box-shadow: 2px 2px 0 #070c14 !important;
+}
+
+body.paper-dark app-root .main-nav a:hover {
+  background: #2d4060 !important;
+  color: #ffffff !important;
+}
+
+body.paper-dark app-root .main-nav a.is-active {
+  background: #ffe07a !important;
+  color: #121212 !important;
+  border-color: #101722 !important;
+  box-shadow: 2px 2px 0 #101722 !important;
+}
+
+body.paper-dark app-root .menu-toggle,
+body.paper-dark app-root .theme-toggle-mobile {
+  color: #f5efe4;
+}
+
+body.paper-dark app-root .menu-toggle span {
+  background: #f5efe4;
+}
+
+body.paper-dark app-root .about-pillar:nth-child(1) {
+  background: #ffe59e !important;
+}
+
+body.paper-dark app-root .about-pillar:nth-child(2) {
+  background: #cdeeff !important;
+}
+
+body.paper-dark app-root .about-pillar:nth-child(3) {
+  background: #ccf4c4 !important;
+}
+
+body.paper-dark app-root .about-pillar:nth-child(4) {
+  background: #f8c6de !important;
+}
+
+body.paper-dark app-root .about-pillar,
+body.paper-dark app-root .about-pillar span,
+body.paper-dark app-root .about-pillar p {
+  color: #121212 !important;
+  border-color: #101722 !important;
+}
+
+body.paper-dark app-root .snapshot-list li {
+  background: #202b3c !important;
+}
+
+body.paper-dark app-root .snapshot-list span {
+  color: rgb(245 239 228 / 0.78) !important;
+}
+
+body.paper-dark app-root .snapshot-list strong {
+  color: #f5efe4 !important;
+}
+
+body.paper-dark app-root .exp-badges span,
+body.paper-dark app-root .project-case-row > span,
+body.paper-dark app-root .project-badge {
+  background: #f4efe5 !important;
+  color: #121212 !important;
+  border-color: #101722 !important;
+  box-shadow: 1px 1px 0 #101722 !important;
+}
+
+body.paper-dark app-root .project-hover-panel,
+body.paper-dark app-root .project-preview-title,
+body.paper-dark app-root .project-preview-row > strong {
+  color: #f5efe4 !important;
+}
+
+body.paper-dark app-root .project-preview-row > span {
+  color: rgb(245 239 228 / 0.8) !important;
+}
+
+body.paper-dark app-root .fact-mark {
+  color: #121212 !important;
+  border-color: #101722 !important;
+  box-shadow: 1px 1px 0 #101722 !important;
+}
+
+body.paper-dark app-root .fact-cyan .fact-mark {
+  background: #8debf4 !important;
+}
+
+body.paper-dark app-root .fact-yellow .fact-mark {
+  background: #ffe07a !important;
+}
+
+body.paper-dark app-root .fact-green .fact-mark {
+  background: #bdf79a !important;
+}
+
+body.paper-dark app-root .fact-pink .fact-mark {
+  background: #f8a9c5 !important;
+}
+
+body.paper-dark app-root .skill-icon {
+  background: #f4efe5 !important;
+  color: #121212 !important;
+  border-color: #101722 !important;
+  box-shadow: 1px 1px 0 #101722 !important;
+}
+
+body.paper-dark app-root .skill-icon.token {
+  background: #f4efe5 !important;
+  color: #121212 !important;
+}
+
+body.paper-dark app-root .hero-chip {
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 2px 2px 0 #101722;
+}
+
+body.paper-dark app-root .hero-chip:nth-child(odd) {
+  background: #ffe59e;
+}
+
+body.paper-dark app-root .hero-chip:nth-child(even) {
+  background: #cdeeff;
+}
+
+body.paper-dark app-root .stack-belt .tool-chip {
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 2px 2px 0 #101722;
+}
+
+body.paper-dark app-root .filter-chip {
+  background: #25344d;
+  color: #f5efe4;
+  border-color: #101722;
+  box-shadow: 1px 1px 0 #070c14;
+}
+
+body.paper-dark app-root .filter-chip.is-active {
+  background: #ffe07a;
+  color: #121212;
+  border-color: #101722;
+}
+
+body.paper-dark app-root .proof-link {
+  background: #25344d;
+  color: #f5efe4;
+  border-color: #101722;
+  box-shadow: 1px 1px 0 #070c14;
+}
+
+body.paper-dark app-root .project-proof-label {
+  background: #25344d;
+  color: #f5efe4;
+  border-color: #101722;
+  box-shadow: 1px 1px 0 #070c14;
+}
+
+body.paper-dark app-root .proof-link.proof-live,
+body.paper-dark app-root .proof-link.proof-docs,
+body.paper-dark app-root .proof-link.proof-repo {
+  color: #121212;
+}
+
+body.paper-dark app-root .proof-link.proof-primary {
+  box-shadow: 2px 2px 0 #101722;
+}
+
+body.paper-dark app-root .project-impact-chip {
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 1px 1px 0 #101722;
+}
+
+body.paper-dark app-root .timeline-toggle {
+  background: #283347;
+  color: #f5efe4;
+  border-color: #101722;
+  box-shadow: 2px 2px 0 #070c14;
+}
+
+body.paper-dark app-root .cert-note-list li {
+  background: #202d40;
+  color: #f5efe4;
+  border-color: #101722;
+  box-shadow: 2px 2px 0 #070c14;
+}
+
+body.paper-dark app-root .cert-note-list li::before {
+  background: #ffd74d;
+  border-color: #101722;
+}
+
+body.paper-dark app-root .cert-application .cert-note-list li {
+  background: #f4efe5 !important;
+  color: #121212 !important;
+  border-color: #101722 !important;
+  box-shadow: 2px 2px 0 #070c14 !important;
+}
+
+body.paper-dark app-root .cert-application .cert-note-list li::before {
+  background: #ffe07a !important;
+  border-color: #101722 !important;
+}
+
+body.paper-dark app-root .cert-application .cert-note-list li * {
+  color: #121212 !important;
+}
+
+body.paper-dark app-root .chatbot-panel {
+  background: #1a2231;
+}
+
+body.paper-dark app-root .chatbot-launch {
+  background: linear-gradient(145deg, #ffe07a 0%, #ffd35d 100%);
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 4px 4px 0 #070c14;
+}
+
+body.paper-dark app-root .chatbot-launch-avatar {
+  background: #f4efe5;
+  border-color: #101722;
+  box-shadow: 1px 1px 0 #101722;
+}
+
+body.paper-dark app-root .chatbot-head {
+  background: #182031;
+}
+
+body.paper-dark app-root .chatbot-meta h3,
+body.paper-dark app-root .chatbot-meta p,
+body.paper-dark app-root .chatbot-thread p,
+body.paper-dark app-root .chatbot-foot {
+  color: #f5efe4;
+}
+
+body.paper-dark app-root .chat-msg.bot {
+  background: #25344d;
+}
+
+body.paper-dark app-root .chat-msg.user {
+  background: #2f5464;
+}
+
+body.paper-dark app-root .chatbot-close,
+body.paper-dark app-root .chatbot-input-wrap input {
+  background: #f4efe5;
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 2px 2px 0 #070c14;
+}
+
+body.paper-dark app-root .chatbot-prompt-chip {
+  background: #ffe07a;
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 1px 1px 0 #101722;
+}
+
+body.paper-dark app-root .chatbot-send {
+  background: #8debf4;
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 2px 2px 0 #101722;
+}
+
+body.paper-dark app-root .chat-msg-cta {
+  background: #ffe07a;
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 1px 1px 0 #101722;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  line-height: 1;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}

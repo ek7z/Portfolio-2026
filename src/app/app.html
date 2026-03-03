@@ -1,0 +1,734 @@
+﻿<div class="noise-layer" aria-hidden="true"></div>
+
+<header class="top-nav neo-card reveal" [class.menu-open]="isMobileMenuOpen">
+  <a
+    href="#home"
+    class="brand"
+    [class.is-active]="activeSection === 'home'"
+    [attr.aria-current]="activeSection === 'home' ? 'page' : null"
+    aria-label="Go to Home"
+    (click)="onNavSelect('home')"
+  >
+    <span class="brand-logo-wrap" aria-hidden="true">
+      <img class="brand-logo" src="assets/branding/ek7z.png" alt="" loading="eager" />
+    </span>
+    <span class="sr-only">EK.7z Portfolio</span>
+  </a>
+
+  <div class="nav-mascot-lane" aria-hidden="true">
+    <span class="nav-cat-sprite">
+      <span class="nav-cat-strip" aria-hidden="true">
+        @for (frameSrc of catFrameSources; track frameSrc; let i = $index) {
+          <img
+            #catFrameEl
+            class="nav-cat-frame"
+            [class.is-visible]="i === 0"
+            [src]="frameSrc"
+            alt=""
+            loading="eager"
+            decoding="async"
+          />
+        }
+      </span>
+    </span>
+  </div>
+
+  <div class="nav-mobile-actions">
+    <button
+      class="theme-toggle-mobile"
+      type="button"
+      [attr.aria-pressed]="isDarkPaper"
+      [attr.aria-label]="isDarkPaper ? 'Switch to light paper mode' : 'Switch to dark paper mode'"
+      (click)="toggleTheme()"
+    >
+      @if (isDarkPaper) {
+        <svg class="theme-mobile-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M12 4a1 1 0 0 1 1 1v1.2a1 1 0 1 1-2 0V5a1 1 0 0 1 1-1zm0 12.8a1 1 0 0 1 1 1V19a1 1 0 1 1-2 0v-1.2a1 1 0 0 1 1-1zM6.8 12a1 1 0 0 1-1 1H4.6a1 1 0 1 1 0-2h1.2a1 1 0 0 1 1 1zm12.6 0a1 1 0 0 1-1 1h-1.2a1 1 0 1 1 0-2h1.2a1 1 0 0 1 1 1zm-9.18-4.58a1 1 0 0 1 0 1.41l-.85.85a1 1 0 0 1-1.41-1.41l.85-.85a1 1 0 0 1 1.41 0zm5.95 5.95a1 1 0 0 1 0 1.41l-.85.85a1 1 0 0 1-1.41-1.41l.85-.85a1 1 0 0 1 1.41 0zM8.96 14.22a1 1 0 0 1 0 1.41l-.85.85a1 1 0 0 1-1.41-1.41l.85-.85a1 1 0 0 1 1.41 0zm5.95-5.95a1 1 0 0 1 0 1.41l-.85.85a1 1 0 1 1-1.41-1.41l.85-.85a1 1 0 0 1 1.41 0zM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"
+          />
+        </svg>
+      } @else {
+        <svg class="theme-mobile-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M14.5 3.3a1 1 0 0 1 .84 1.62 7.6 7.6 0 0 0 5.2 12.06 1 1 0 0 1 .43 1.88A10 10 0 1 1 12.94 2.8a1 1 0 0 1 1.56.5z"
+          />
+        </svg>
+      }
+    </button>
+
+    <button
+      class="menu-toggle"
+      type="button"
+      aria-label="Toggle menu"
+      aria-controls="main-nav"
+      [attr.aria-expanded]="isMobileMenuOpen"
+      (click)="toggleMobileMenu()"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+
+  <div class="nav-wrap" [class.is-open]="isMobileMenuOpen">
+    <nav id="main-nav" class="main-nav" aria-label="Main">
+      <a
+        href="#home"
+        [class.is-active]="activeSection === 'home'"
+        [attr.aria-current]="activeSection === 'home' ? 'page' : null"
+        (click)="onNavSelect('home')"
+      >
+        Home
+      </a>
+      <a
+        href="#about"
+        [class.is-active]="activeSection === 'about'"
+        [attr.aria-current]="activeSection === 'about' ? 'page' : null"
+        (click)="onNavSelect('about')"
+      >
+        About
+      </a>
+      <a
+        href="#skills"
+        [class.is-active]="activeSection === 'skills'"
+        [attr.aria-current]="activeSection === 'skills' ? 'page' : null"
+        (click)="onNavSelect('skills')"
+      >
+        Skills
+      </a>
+      <a
+        href="#projects"
+        [class.is-active]="activeSection === 'projects'"
+        [attr.aria-current]="activeSection === 'projects' ? 'page' : null"
+        (click)="onNavSelect('projects')"
+      >
+        Projects
+      </a>
+    </nav>
+
+    <button
+      class="neo-btn btn-cyan theme-toggle"
+      type="button"
+      [attr.aria-pressed]="isDarkPaper"
+      [attr.aria-label]="isDarkPaper ? 'Switch to light paper mode' : 'Switch to dark paper mode'"
+      (click)="toggleTheme()"
+    >
+      <span class="theme-toggle-dot" [class.is-dark]="isDarkPaper" aria-hidden="true"></span>
+      <span>{{ isDarkPaper ? 'Dark Paper' : 'Light Paper' }}</span>
+    </button>
+
+    <a class="neo-btn btn-yellow nav-cta" [href]="'mailto:' + profile.email" (click)="closeMobileMenu()">
+      Hire Me
+    </a>
+  </div>
+</header>
+
+<main class="shell">
+  <section id="home" class="neo-card window-card reveal delay-1">
+    <div class="window-head">
+      <div class="window-dots" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <p>Developer Intro</p>
+    </div>
+
+    <div class="window-body">
+      <div class="avatar-col hero-pop reveal delay-1">
+        <figure
+          class="avatar-photo"
+          [class.is-revealed]="isPhotoRevealed"
+          role="button"
+          tabindex="0"
+          [attr.aria-pressed]="isPhotoRevealed"
+          aria-label="Toggle profile photo"
+          (pointerup)="onPhotoPointer($event)"
+          (keydown.enter)="togglePhotoReveal()"
+          (keydown.space)="onPhotoSpace($event)"
+        >
+          <img
+            class="avatar-layer avatar-cartoon"
+            src="assets/profile/jericho-cartoon.png"
+            alt="Jericho cartoon portrait"
+            loading="eager"
+          />
+          <img
+            class="avatar-layer avatar-real"
+            src="assets/profile/jericho-photo.jpg"
+            alt="Jericho original portrait"
+            loading="lazy"
+          />
+        </figure>
+        <div class="avatar-meta">
+          <p class="avatar-location">{{ profile.location }}</p>
+          <div class="avatar-socials" aria-label="Social links">
+            @for (social of socialLinks; track social.label) {
+              @if (social.url !== '') {
+                <a
+                  class="avatar-social"
+                  [href]="social.url"
+                  [attr.target]="social.url.startsWith('http') ? '_blank' : null"
+                  [attr.rel]="social.url.startsWith('http') ? 'noopener noreferrer' : null"
+                  [attr.aria-label]="social.label"
+                >
+                  <span class="avatar-social-icon" aria-hidden="true">
+                    <img [src]="social.icon" alt="" loading="lazy" />
+                  </span>
+                  <span>{{ social.label }}</span>
+                </a>
+              }
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="intro-col hero-pop">
+        <div class="intro-grid">
+          <div class="intro-main reveal delay-2">
+            <h1>{{ profile.name }}</h1>
+            <p class="hero-role">{{ profile.role }}</p>
+            <p class="hero-summary">{{ summary }}</p>
+          </div>
+
+          <aside class="intro-side reveal delay-2">
+            <div class="side-head">
+              <p class="side-kicker">At A Glance</p>
+              <span class="work-pill">Open To Work</span>
+            </div>
+            <div class="stat-grid">
+              @for (stat of heroStats; track stat.label) {
+                <article class="stat-card {{ stat.tone }}">
+                  <span>{{ stat.label }}</span>
+                  <strong>{{ stat.value }}</strong>
+                </article>
+              }
+            </div>
+            <p class="hero-motto">{{ heroMotto }}</p>
+          </aside>
+        </div>
+
+        <div class="contact-strip reveal delay-2">
+          <button
+            class="contact-pill pill-phone copy-phone"
+            type="button"
+            [attr.aria-label]="isPhoneCopied ? 'Phone number copied' : 'Copy phone number'"
+            (click)="copyPhoneNumber()"
+          >
+            <span class="contact-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M7.3 2h2.4l1.1 4.7-1.8 1.8a16.5 16.5 0 0 0 6.5 6.5l1.8-1.8L22 14.3V16.7c0 1.1-.9 2-2 2A18 18 0 0 1 5.3 4c0-1.1.9-2 2-2z" />
+              </svg>
+            </span>
+            <span class="contact-copy">
+              <span class="contact-kicker">{{ isPhoneCopied ? 'Copied' : 'Phone' }}</span>
+              <span class="contact-value">{{ profile.phone }}</span>
+            </span>
+            <span class="contact-copy-badge" aria-live="polite">{{ isPhoneCopied ? 'Copied' : 'Copy' }}</span>
+          </button>
+          <a class="contact-pill pill-mail" [href]="'mailto:' + profile.email" aria-label="Email Jericho Santos">
+            <span class="contact-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M3 6h18v12H3z" fill="none" />
+                <path d="M3 6h18v12H3V6zm2.2 1.7L12 12.8l6.8-5.1H5.2zM19 9l-7 5.3L5 9v7h14V9z" />
+              </svg>
+            </span>
+            <span class="contact-copy">
+              <span class="contact-kicker">Email</span>
+              <span class="contact-value">{{ profile.email }}</span>
+            </span>
+          </a>
+          <button class="contact-pill pill-resume" type="button" aria-label="View resume preview" (click)="openResumePreview()">
+            <span class="contact-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M6 2h8l4 4v16H6z" fill="none" />
+                <path d="M6 2h8l4 4v16H6V2zm2 2v16h8V7h-3V4H8zm1.5 8h5v1.8h-5V12zm0 3h5v1.8h-5V15z" />
+              </svg>
+            </span>
+            <span class="contact-copy">
+              <span class="contact-kicker">Resume</span>
+              <span class="contact-value">View Resume</span>
+            </span>
+          </button>
+        </div>
+
+        <div class="hero-focus-wrap reveal delay-3" aria-label="Core focus">
+          <p class="hero-focus-kicker">Core Focus</p>
+          <div class="hero-focus-grid">
+            @for (chip of heroChips; track chip; let i = $index) {
+              <article class="hero-focus-card">
+                <span class="hero-focus-index">0{{ i + 1 }}</span>
+                <strong>{{ chip }}</strong>
+              </article>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="neo-card stack-belt reveal delay-1" aria-label="Core Toolbox">
+    <p class="belt-label">Core Toolbox</p>
+    <div class="belt-track">
+      @for (tool of featuredStack; track tool.name) {
+        <article class="tool-chip" [style.background]="tool.bg">
+          <img [src]="tool.icon" [alt]="tool.name + ' logo'" loading="lazy" />
+          <span>{{ tool.name }}</span>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section id="about" class="neo-card panel reveal delay-1">
+    <div class="section-title">
+      <h2>About</h2>
+      <span class="neo-chip chip-green">NEOBRUTAL CLEAN</span>
+    </div>
+
+    <div class="about-layout">
+      <div class="about-main reveal">
+        <p class="about-kicker">Builder Manifesto</p>
+        @for (paragraph of aboutCopy; track paragraph) {
+          <p class="panel-copy">{{ paragraph }}</p>
+        }
+        <div class="about-pillar-row">
+          @for (pillar of aboutPillars; track pillar.label) {
+            <article class="about-pillar">
+              <span>{{ pillar.token }}</span>
+              <p>{{ pillar.label }}</p>
+            </article>
+          }
+        </div>
+      </div>
+
+      <aside class="about-snapshot reveal">
+        <div class="snapshot-head">
+          <p class="snapshot-title">Quick Snapshot</p>
+          <span class="snapshot-chip">Project Ready</span>
+        </div>
+        <ul class="snapshot-list">
+          @for (item of aboutSnapshot; track item.label) {
+            <li>
+              <span>{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+            </li>
+          }
+        </ul>
+      </aside>
+    </div>
+
+    <div class="about-metrics">
+      @for (metric of aboutMetrics; track metric.label) {
+        <article class="metric-card reveal {{ metric.tone }}">
+          <span>{{ metric.label }}</span>
+          <strong>{{ metric.value }}</strong>
+        </article>
+      }
+    </div>
+
+    <div class="edu-block reveal">
+      <div class="edu-head">
+        <h3>Education</h3>
+        <span class="edu-period">{{ education.period }}</span>
+      </div>
+      <p class="edu-degree">{{ education.degree }}</p>
+      <p>{{ education.school }}</p>
+    </div>
+
+    <ul class="fact-list">
+      @for (fact of quickFacts; track fact.title) {
+        <li class="fact-card reveal {{ fact.tone }}">
+          <span class="fact-mark">{{ fact.mark }}</span>
+          <div class="fact-copy">
+            <h4>{{ fact.title }}</h4>
+            <p>{{ fact.detail }}</p>
+          </div>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <div class="section-separator sep-cyan reveal" aria-hidden="true">
+    <span class="sep-line"></span>
+    <span class="sep-label">Skill Matrix</span>
+    <span class="sep-line"></span>
+  </div>
+
+  <section id="skills" class="neo-card panel skills-panel reveal delay-2">
+    <div class="section-title">
+      <h2>Skills</h2>
+      <span class="neo-chip chip-cyan">STACK SNAPSHOT</span>
+    </div>
+    <div class="skill-grid">
+      @for (group of skillGroups; track group.title) {
+        <article class="skill-card {{ group.tone }} reveal">
+          <h3>{{ group.title }}</h3>
+          <ul class="skill-list">
+            @for (skill of group.items; track skill.label) {
+              <li class="skill-item">
+                <span class="skill-icon" [class.token]="!skill.icon">
+                  @if (skill.icon) {
+                    <img [src]="skill.icon" [alt]="skill.label + ' logo'" loading="lazy" />
+                  } @else {
+                    {{ skill.token }}
+                  }
+                </span>
+                <span>{{ skill.label }}</span>
+              </li>
+            }
+          </ul>
+        </article>
+      }
+    </div>
+  </section>
+
+  <div class="section-separator sep-yellow reveal" aria-hidden="true">
+    <span class="sep-line"></span>
+    <span class="sep-label">Experience and Credentials</span>
+    <span class="sep-line"></span>
+  </div>
+
+  <div class="content-grid">
+    <section class="neo-card panel reveal delay-2">
+      <div class="section-title">
+        <h2>Experience</h2>
+      </div>
+      <div class="exp-summary reveal">
+        @for (stat of experienceStats; track stat.label) {
+          <article class="exp-stat-card {{ stat.tone }}">
+            <span>{{ stat.label }}</span>
+            <strong>{{ stat.value }}</strong>
+          </article>
+        }
+      </div>
+      <div class="filter-row exp-filter-row reveal">
+        @for (filter of experienceFilters; track filter.id) {
+          <button
+            class="filter-chip"
+            type="button"
+            [class.is-active]="activeExperienceFilter === filter.id"
+            [attr.aria-pressed]="activeExperienceFilter === filter.id"
+            (click)="setExperienceFilter(filter.id)"
+          >
+            {{ filter.label }}
+          </button>
+        }
+      </div>
+      <div class="timeline">
+        @for (exp of filteredExperiences; track exp.role) {
+          <article class="timeline-item reveal {{ exp.tone }}">
+            <div class="timeline-head">
+              <h3>{{ exp.role }}</h3>
+              <p>{{ exp.period }}</p>
+            </div>
+            <p class="timeline-company">{{ exp.company }}</p>
+            <div class="exp-badges">
+              @for (badge of exp.badges; track badge) {
+                <span>{{ badge }}</span>
+              }
+            </div>
+            <ul class="timeline-points">
+              @for (item of getExperienceHighlights(exp); track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+            @if (shouldShowExperienceToggle(exp)) {
+              <button
+                class="timeline-toggle"
+                type="button"
+                [attr.aria-expanded]="isExperienceExpanded(exp.role)"
+                (click)="toggleExperienceHighlights(exp.role)"
+              >
+                {{ isExperienceExpanded(exp.role) ? 'Show Less' : 'Show More' }}
+              </button>
+            }
+          </article>
+        }
+      </div>
+    </section>
+
+    <aside class="right-rail">
+      <section class="neo-card panel cert-panel reveal delay-3">
+        <div class="section-title">
+          <h2>Certifications</h2>
+        </div>
+        <div class="cert-overview reveal">
+          @for (stat of certificationStats; track stat.label) {
+            <article class="cert-stat-card {{ stat.tone }}">
+              <span>{{ stat.label }}</span>
+              <strong>{{ stat.value }}</strong>
+            </article>
+          }
+        </div>
+        <ul class="cert-list">
+          @for (cert of certifications; track cert.title) {
+            <li class="cert-item reveal">
+              <span class="cert-mark">{{ cert.mark }}</span>
+              <div class="cert-copy">
+                <p class="cert-title">{{ cert.title }}</p>
+                <p class="cert-meta">{{ cert.provider }} - {{ cert.date }}</p>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section class="neo-card panel cert-application reveal delay-3">
+        <div class="section-title">
+          <h3>Applied Learning</h3>
+          <span class="neo-chip chip-cyan">FIELD USE</span>
+        </div>
+
+        <div class="cert-overview">
+          @for (signal of certSignals; track signal.label) {
+            <article class="cert-stat-card {{ signal.tone }}">
+              <span>{{ signal.label }}</span>
+              <strong>{{ signal.value }}</strong>
+            </article>
+          }
+        </div>
+
+        <ul class="cert-note-list">
+          @for (note of certApplicationNotes; track note) {
+            <li>{{ note }}</li>
+          }
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+  <div class="section-separator sep-pink reveal" aria-hidden="true">
+    <span class="sep-line"></span>
+    <span class="sep-label">Project Casebook</span>
+    <span class="sep-line"></span>
+  </div>
+
+  <section id="projects" class="neo-card panel reveal delay-3">
+    <div class="section-title">
+      <h2>Projects</h2>
+      <span class="neo-chip chip-cyan">REAL CLIENT WORK</span>
+    </div>
+    <div class="project-summary reveal">
+      @for (stat of projectStats; track stat.label) {
+        <article class="project-stat-card {{ stat.tone }}">
+          <span>{{ stat.label }}</span>
+          <strong>{{ stat.value }}</strong>
+        </article>
+      }
+    </div>
+    <div class="filter-row project-filter-row reveal">
+      @for (filter of projectFilters; track filter.id) {
+        <button
+          class="filter-chip"
+          type="button"
+          [class.is-active]="activeProjectFilter === filter.id"
+          [attr.aria-pressed]="activeProjectFilter === filter.id"
+          (click)="setProjectFilter(filter.id)"
+        >
+          {{ filter.label }}
+        </button>
+      }
+    </div>
+    <div class="project-grid">
+      @for (project of filteredProjects; track project.title; let i = $index) {
+        <article class="project-card reveal {{ project.tone }}" tabindex="0" [attr.aria-label]="project.title">
+          <div class="project-head">
+            <div class="project-title-wrap">
+              <span class="project-index">{{ i + 1 }}</span>
+              <h3>{{ project.title }}</h3>
+            </div>
+            <span class="project-stage">{{ project.stage }}</span>
+          </div>
+          <div class="project-impact-strip">
+            @for (metric of project.impactMetrics; track metric) {
+              <span class="project-impact-chip">{{ metric }}</span>
+            }
+          </div>
+          @if (project.proofLinks.length > 0) {
+            <div class="project-proof-row">
+              <span class="project-proof-label">Proof</span>
+              @for (link of project.proofLinks; track link.url) {
+                <a
+                  class="proof-link"
+                  [class.proof-primary]="link.kind === 'live'"
+                  [class.proof-live]="link.kind === 'live'"
+                  [class.proof-docs]="link.kind === 'docs'"
+                  [class.proof-repo]="link.kind === 'repo'"
+                  [href]="link.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  [attr.aria-label]="link.label + ' (opens in new tab)'"
+                >
+                  <span>{{ link.label }}</span>
+                  <span class="proof-link-arrow" aria-hidden="true">â†—</span>
+                </a>
+              }
+            </div>
+          }
+          <div class="project-case">
+            <div class="project-case-row">
+              <span>Problem</span>
+              <p>{{ project.description }}</p>
+            </div>
+            <div class="project-case-row">
+              <span>Role</span>
+              <p>{{ project.role }}</p>
+            </div>
+            <div class="project-case-row">
+              <span>Stack</span>
+              <div class="project-badges">
+                @for (badge of project.badges; track badge) {
+                  <span class="project-badge">{{ badge }}</span>
+                }
+              </div>
+            </div>
+            <div class="project-case-row">
+              <span>Result</span>
+              <p>{{ project.result }}</p>
+            </div>
+          </div>
+          <aside class="project-hover-panel">
+            <p class="project-preview-title">Quick Read</p>
+            <div class="project-preview-row">
+              <span>Stage</span>
+              <strong>{{ project.stage }}</strong>
+            </div>
+            <div class="project-preview-row">
+              <span>Scope</span>
+              <strong>{{ project.scope }}</strong>
+            </div>
+            <div class="project-preview-row">
+              <span>Impact</span>
+              <strong>{{ project.impact }}</strong>
+            </div>
+          </aside>
+        </article>
+      }
+    </div>
+  </section>
+</main>
+
+<div class="mobile-cta-bar">
+  <a class="mobile-cta-btn btn-yellow" [href]="'mailto:' + profile.email" aria-label="Hire me via email">Hire Me</a>
+  <button class="mobile-cta-btn btn-cyan" type="button" aria-label="Open resume preview" (click)="openResumePreview()">
+    View Resume
+  </button>
+</div>
+
+@if (isResumePreviewOpen) {
+  <div class="resume-overlay" role="presentation" (click)="closeResumePreview()">
+    <section
+      class="resume-modal neo-card"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Resume Preview"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="resume-head">
+        <div class="resume-meta">
+          <p>Resume Preview</p>
+          <h3>Jericho Santos</h3>
+        </div>
+        <div class="resume-actions">
+          <a class="neo-btn btn-cyan" [href]="resumeFileUrl" target="_blank" rel="noopener">Open Tab</a>
+          <a class="neo-btn btn-yellow" [href]="resumeFileUrl" download>Download</a>
+          <button class="neo-btn btn-pink" type="button" (click)="closeResumePreview()">Close</button>
+        </div>
+      </header>
+
+      <div class="resume-frame-wrap">
+        <iframe class="resume-frame" [src]="resumeViewerSrc" title="Jericho resume preview"></iframe>
+      </div>
+    </section>
+  </div>
+}
+
+<aside class="chatbot-shell" [class.is-open]="isChatOpen" aria-label="Chat assistant widget">
+  @if (!isChatOpen) {
+    <button class="chatbot-launch" type="button" aria-label="Open chat assistant" (click)="openChat()">
+      <span class="chatbot-launch-avatar" aria-hidden="true">
+        <img [src]="chatAvatarSrc" alt="" loading="lazy" />
+      </span>
+      <span>Chat with Jericho</span>
+      <span class="chatbot-launch-msgicon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M4 4h16v11H8l-4 4V4zm2 2v8.2L7.2 13H18V6H6zm2.8 2h2.4v2H8.8V8zm3.6 0h2.4v2h-2.4V8z" />
+        </svg>
+      </span>
+    </button>
+  } @else {
+    <section class="chatbot-panel neo-card" role="dialog" aria-label="Chat with portfolio assistant">
+      <header class="chatbot-head">
+        <div class="chatbot-agent">
+          <span class="chatbot-avatar" aria-hidden="true">
+            <img [src]="chatAvatarSrc" alt="" loading="lazy" />
+          </span>
+          <div class="chatbot-meta">
+            <h3>Chat with Jericho</h3>
+            <p><span class="chatbot-online-dot"></span>Online</p>
+          </div>
+        </div>
+        <button class="chatbot-close" type="button" aria-label="Close chat assistant" (click)="closeChat()">×</button>
+      </header>
+
+      <div class="chatbot-thread" #chatScrollContainer>
+        @for (message of chatMessages; track message.id) {
+          <article class="chat-msg" [class.bot]="message.sender === 'bot'" [class.user]="message.sender === 'user'">
+            <p>{{ message.text }}</p>
+            @if (message.cta) {
+              <a class="chat-msg-cta" [href]="message.cta.href">
+                {{ message.cta.label }}
+              </a>
+            }
+          </article>
+        }
+
+        @if (isBotTyping) {
+          <article class="chat-msg bot typing" aria-label="Assistant is typing">
+            <span class="typing-dots" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+            <span class="sr-only">Assistant is typing</span>
+          </article>
+        }
+      </div>
+
+      <div class="chatbot-prompts">
+        @for (prompt of quickChatPrompts; track prompt) {
+          <button type="button" class="chatbot-prompt-chip" (click)="sendQuickPrompt(prompt)">
+            {{ prompt }}
+          </button>
+        }
+      </div>
+
+      <div class="chatbot-input-wrap">
+        <label class="sr-only" for="chat-input">Type a message</label>
+        <input
+          id="chat-input"
+          type="text"
+          [value]="chatDraft"
+          maxlength="1000"
+          placeholder="Type a message..."
+          autocomplete="off"
+          (input)="onChatDraftInput($event)"
+          (keydown.enter)="onChatEnter($event)"
+        />
+        <button type="button" class="chatbot-send" (click)="sendChatMessage()" aria-label="Send message">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3.4 12.8 20.6 4c.8-.4 1.7.3 1.5 1.2l-2.6 13.6c-.2.9-1.3 1.2-1.9.6l-3.8-3.8-3.4 2.7c-.7.5-1.7.1-1.8-.8l-.6-5.3-4-2.1c-.8-.4-.8-1.5 0-1.9zM7.7 9.8l2.5 1.3c.3.2.6.5.6.9l.3 2.8 1.8-1.4c.4-.3 1-.3 1.3.1l2.7 2.7 1.7-8.9-11 5.5z" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="chatbot-foot">
+        <span>Ask about stack, projects, AI focus, or contact.</span>
+        <span>{{ chatDraft.length }}/{{ maxChatChars }}</span>
+      </div>
+    </section>
+  }
+</aside>
+
+
+
