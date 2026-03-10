@@ -310,6 +310,14 @@ export class App implements AfterViewInit, OnDestroy {
     return this.themeMode === 'dark';
   }
 
+  get shouldSuppressMobileChatLauncher(): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return window.innerWidth <= 620 && this.activeSection === 'projects' && !this.isChatOpen;
+  }
+
   readonly aboutCopy = [
     'I design and ship internal tools and client apps with clean UI, stable backend flows, and maintainable code.',
     'Recent work covers PSMMS maintenance, repair operations build, and QR-based web/mobile workflow delivery.',
@@ -1810,4 +1818,3 @@ export class App implements AfterViewInit, OnDestroy {
     }
   }
 }
-
