@@ -508,13 +508,8 @@
       <h2>Projects</h2>
       <span class="neo-chip chip-cyan">REAL CLIENT WORK</span>
     </div>
-    <div class="project-summary reveal">
-      @for (stat of projectStats; track stat.label) {
-        <article class="project-stat-card {{ stat.tone }}">
-          <span>{{ stat.label }}</span>
-          <strong>{{ stat.value }}</strong>
-        </article>
-      }
+    <div class="project-intro-bar reveal">
+      <p>Selected systems across enterprise delivery, freelance builds, and academic products.</p>
     </div>
     <div class="filter-row project-filter-row reveal">
       @for (filter of projectFilters; track filter.id) {
@@ -529,86 +524,857 @@
         </button>
       }
     </div>
-    <div class="project-grid">
-      @for (project of filteredProjects; track project.title; let i = $index) {
-        <article class="project-card reveal {{ project.tone }}" tabindex="0" [attr.aria-label]="project.title">
-          <div class="project-head">
+    <div class="projects-desktop-shell">
+    @if (featuredProject; as project) {
+      <article class="project-hero-card neo-card reveal {{ project.tone }}" [class.is-repair-layout]="project.title === 'Repair Management Monitoring System'">
+        <div class="project-hero-copy">
+          <div class="project-hero-head">
             <div class="project-title-wrap">
-              <span class="project-index">{{ i + 1 }}</span>
-              <h3>{{ project.title }}</h3>
+              <span class="project-index">01</span>
+              <div class="project-mini-title-copy">
+                <h3>{{ project.title }}</h3>
+                <p>{{ project.scope }}</p>
+              </div>
             </div>
             <span class="project-stage">{{ project.stage }}</span>
           </div>
-          <div class="project-impact-strip">
-            @for (metric of project.impactMetrics; track metric) {
+
+          <div class="featured-project-highlights">
+            @for (metric of project.impactMetrics.slice(0, 2); track metric) {
               <span class="project-impact-chip">{{ metric }}</span>
             }
           </div>
-          @if (project.proofLinks.length > 0) {
+
+          <p class="project-hero-lead">{{ project.description }}</p>
+
+          <div class="project-hero-result">
+            <span>Outcome</span>
+            <p>{{ project.result }}</p>
+          </div>
+
+          <div class="project-hero-meta">
+            <article>
+              <span>Role</span>
+              <strong>{{ project.role }}</strong>
+            </article>
+            <article>
+              <span>Impact</span>
+              <strong>{{ project.impact }}</strong>
+            </article>
+          </div>
+
+          <div class="project-hero-footer">
+            <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
             <div class="project-proof-row">
-              <span class="project-proof-label">Proof</span>
-              @for (link of project.proofLinks; track link.url) {
-                <a
-                  class="proof-link"
-                  [class.proof-primary]="link.kind === 'live'"
-                  [class.proof-live]="link.kind === 'live'"
-                  [class.proof-docs]="link.kind === 'docs'"
-                  [class.proof-repo]="link.kind === 'repo'"
-                  [href]="link.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  [attr.aria-label]="link.label + ' (opens in new tab)'"
-                >
-                  <span>{{ link.label }}</span>
-                  <span class="proof-link-arrow" aria-hidden="true">&#8599;</span>
-                </a>
+              @if (project.proofLinks.length > 0) {
+                @for (link of project.proofLinks; track link.url) {
+                  <a
+                    class="proof-link"
+                    [class.proof-primary]="link.kind === 'live'"
+                    [class.proof-live]="link.kind === 'live'"
+                    [class.proof-docs]="link.kind === 'docs'"
+                    [class.proof-repo]="link.kind === 'repo'"
+                    [href]="link.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    [attr.aria-label]="link.label + ' (opens in new tab)'"
+                  >
+                    <span>{{ link.label }}</span>
+                    <span class="proof-link-arrow" aria-hidden="true">&#8599;</span>
+                  </a>
+                }
+              }
+              @if (project.media.length > 0) {
+                <button class="featured-gallery-btn is-secondary" type="button" (click)="openProjectGallery(project)">
+                  View Gallery
+                </button>
               }
             </div>
-          }
-          <div class="project-case">
-            <div class="project-case-row">
-              <span>Problem</span>
-              <p>{{ project.description }}</p>
+          </div>
+        </div>
+
+        <div class="project-hero-visual">
+          @if (getActiveProjectMedia(project); as activeMedia) {
+            <button
+              class="project-hero-screen"
+              type="button"
+              [attr.aria-label]="'Open gallery for ' + project.title"
+              (click)="openProjectGallery(project, getProjectMediaIndex(project))"
+            >
+              <div class="project-screen-frame" [class.is-mobile-shot]="activeMedia.frame === 'mobile'" [class.is-poster-shot]="activeMedia.frame === 'poster'">
+                <div class="project-screen-topbar" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div
+                  class="project-screen-canvas project-hero-canvas"
+                  [class.is-mobile-shot]="activeMedia.frame === 'mobile'"
+                  [class.is-poster-shot]="activeMedia.frame === 'poster'"
+                  [class.is-repair-canvas]="project.title === 'Repair Management Monitoring System'"
+                >
+                  <img
+                    class="project-screen-image"
+                    [class.is-repair-focus]="project.title === 'Repair Management Monitoring System'"
+                    [style.objectFit]="getProjectMediaFit(activeMedia, 'hero')"
+                    [style.objectPosition]="getProjectMediaPosition(activeMedia, 'hero')"
+                    [style.transform]="getProjectMediaTransform(activeMedia, 'hero')"
+                    [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'hero')"
+                    [src]="activeMedia.src"
+                    [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            </button>
+
+            <div class="project-hero-screenbar">
+              <div class="featured-project-media-meta">
+                <span class="project-showcase-kicker">Featured Preview</span>
+              </div>
+              <div class="featured-project-media-actions">
+                @if (project.media.length > 1) {
+                  <button class="project-nav-btn" type="button" aria-label="Previous screenshot" (click)="prevProjectMedia(project)">
+                    &#8592;
+                  </button>
+                  <span class="project-showcase-count">{{ getProjectMediaIndex(project) + 1 }}/{{ project.media.length }}</span>
+                  <button class="project-nav-btn" type="button" aria-label="Next screenshot" (click)="nextProjectMedia(project)">
+                    &#8594;
+                  </button>
+                }
+                <button class="featured-gallery-btn" type="button" (click)="openProjectGallery(project, getProjectMediaIndex(project))">
+                  Open Gallery
+                </button>
+              </div>
             </div>
-            <div class="project-case-row">
-              <span>Role</span>
-              <p>{{ project.role }}</p>
-            </div>
-            <div class="project-case-row">
-              <span>Stack</span>
-              <div class="project-badges">
-                @for (badge of project.badges; track badge) {
-                  <span class="project-badge">{{ badge }}</span>
+          } @else {
+            <div class="project-hero-fallback">
+              <span class="project-showcase-kicker">Featured Case</span>
+              <h3>{{ project.scope }}</h3>
+              <p>{{ project.impact }}</p>
+              <div class="project-fallback-badges">
+                @for (badge of getProjectPreviewBadges(project); track badge) {
+                  <span>{{ badge }}</span>
                 }
               </div>
             </div>
-            <div class="project-case-row">
-              <span>Result</span>
-              <p>{{ project.result }}</p>
+          }
+        </div>
+      </article>
+    }
+
+    @if (visualProject; as project) {
+      <article class="project-device-feature neo-card reveal {{ project.tone }}">
+        <div class="project-device-feature-copy">
+          <div class="project-mini-top">
+            <div class="project-title-wrap">
+              <span class="project-index">02</span>
+              <div class="project-mini-title-copy">
+                <h3>{{ project.title }}</h3>
+                <p>{{ project.scope }}</p>
+              </div>
+            </div>
+            <span class="project-stage">{{ project.stage }}</span>
+          </div>
+
+          <div class="featured-project-highlights">
+            @for (metric of project.impactMetrics.slice(0, 2); track metric) {
+              <span class="project-impact-chip">{{ metric }}</span>
+            }
+          </div>
+
+          <p class="project-device-feature-lead">{{ project.description }}</p>
+
+          <div class="project-device-feature-result">
+            <span>Result</span>
+            <p>{{ project.result }}</p>
+          </div>
+
+          <div class="project-device-feature-footer">
+            <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
+            <div class="project-proof-row">
+              @if (project.proofLinks.length > 0) {
+                @for (link of project.proofLinks; track link.url) {
+                  <a
+                    class="proof-link"
+                    [class.proof-primary]="link.kind === 'live'"
+                    [class.proof-live]="link.kind === 'live'"
+                    [class.proof-docs]="link.kind === 'docs'"
+                    [class.proof-repo]="link.kind === 'repo'"
+                    [href]="link.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    [attr.aria-label]="link.label + ' (opens in new tab)'"
+                  >
+                    <span>{{ link.label }}</span>
+                    <span class="proof-link-arrow" aria-hidden="true">&#8599;</span>
+                  </a>
+                }
+              }
+              <button class="featured-gallery-btn is-secondary" type="button" (click)="openProjectGallery(project)">
+                View Gallery
+              </button>
             </div>
           </div>
-          <aside class="project-hover-panel">
-            <p class="project-preview-title">Quick Read</p>
-            <div class="project-preview-row">
-              <span>Stage</span>
-              <strong>{{ project.stage }}</strong>
+        </div>
+
+        <div class="project-device-feature-stage">
+          @if (getProjectMediaByFrame(project, 'desktop'); as desktopMedia) {
+            <button class="project-device-board is-desktop" type="button" (click)="openProjectGallery(project, getProjectMediaIndexByFrame(project, 'desktop'), 'desktop')">
+              <span class="project-device-kicker">Web Admin</span>
+              <img class="project-device-image" [src]="desktopMedia.src" [alt]="project.title + ' web admin preview'" loading="lazy" />
+            </button>
+          }
+
+          @if (getProjectMediaByFrame(project, 'mobile'); as mobileMedia) {
+            <button class="project-device-board is-mobile" type="button" (click)="openProjectGallery(project, getProjectMediaIndexByFrame(project, 'mobile'), 'mobile')">
+              <span class="project-device-kicker">Mobile App</span>
+              <img class="project-device-image" [src]="mobileMedia.src" [alt]="project.title + ' mobile preview'" loading="lazy" />
+            </button>
+          }
+        </div>
+      </article>
+    }
+
+    @if (secondaryShowcaseProjects.length > 0) {
+      <div class="project-section-subhead reveal">
+        <div>
+          <h3>Visual Builds</h3>
+          <p>Systems with screenshots and UI surfaces worth opening.</p>
+        </div>
+      </div>
+
+      <div class="project-grid project-grid-showcase">
+        @for (project of secondaryShowcaseProjects; track project.title; let i = $index) {
+          <article class="project-showcase-card neo-card reveal {{ project.tone }}">
+            <div class="project-mini-top">
+              <div class="project-title-wrap">
+                <span class="project-index">{{ i + (visualProject ? 3 : 2) }}</span>
+                <div class="project-mini-title-copy">
+                  <h3>{{ project.title }}</h3>
+                  <p>{{ project.scope }}</p>
+                </div>
+              </div>
+              <span class="project-stage">{{ project.stage }}</span>
             </div>
-            <div class="project-preview-row">
-              <span>Scope</span>
-              <strong>{{ project.scope }}</strong>
+
+            @if (getActiveProjectMedia(project); as activeMedia) {
+              <button
+                class="project-showcase-preview"
+                [class.is-poster-preview]="activeMedia.frame === 'poster'"
+                [class.is-ui-preview]="project.title === 'PSMMS Version 2 UI Build'"
+                type="button"
+                [attr.aria-label]="'Open gallery for ' + project.title"
+                (click)="openProjectGallery(project)"
+              >
+                <img
+                  class="project-showcase-image"
+                  [class.is-poster-preview]="activeMedia.frame === 'poster'"
+                  [class.is-ui-tight]="project.title === 'PSMMS Version 2 UI Build'"
+                  [style.objectFit]="getProjectMediaFit(activeMedia, 'card')"
+                  [style.objectPosition]="getProjectMediaPosition(activeMedia, 'card')"
+                  [style.transform]="getProjectMediaTransform(activeMedia, 'card')"
+                  [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'card')"
+                  [src]="activeMedia.src"
+                  [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                  loading="lazy"
+                />
+                <span class="project-mini-count">{{ project.media.length }} screens</span>
+              </button>
+            }
+
+            <p class="project-showcase-summary">{{ project.result }}</p>
+
+            <div class="project-card-action-row">
+              <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
+              <div class="project-proof-row">
+                @if (project.proofLinks.length > 0) {
+                  @for (link of project.proofLinks; track link.url) {
+                    <a
+                      class="proof-link"
+                      [class.proof-primary]="link.kind === 'live'"
+                      [class.proof-live]="link.kind === 'live'"
+                      [class.proof-docs]="link.kind === 'docs'"
+                      [class.proof-repo]="link.kind === 'repo'"
+                      [href]="link.url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      [attr.aria-label]="link.label + ' (opens in new tab)'"
+                    >
+                      <span>{{ link.label }}</span>
+                      <span class="proof-link-arrow" aria-hidden="true">&#8599;</span>
+                    </a>
+                  }
+                }
+                <button class="featured-gallery-btn is-secondary" type="button" (click)="openProjectGallery(project)">
+                  View Gallery
+                </button>
+              </div>
             </div>
-            <div class="project-preview-row">
-              <span>Impact</span>
-              <strong>{{ project.impact }}</strong>
+          </article>
+        }
+      </div>
+    }
+
+    @if (caseNoteProjects.length > 0) {
+      <div class="project-section-subhead reveal">
+        <div>
+          <h3>Additional Case Notes</h3>
+          <p>Shipped systems without public galleries, kept concise and outcome-focused.</p>
+        </div>
+        @if (hasMoreCaseNotes) {
+          <button class="project-more-btn" type="button" (click)="toggleCaseNotes()">
+            {{ areCaseNotesExpanded ? 'Show Less' : 'Show More' }}
+          </button>
+        }
+      </div>
+
+      <div class="project-grid project-grid-notes">
+        @for (project of visibleCaseNoteProjects; track project.title; let i = $index) {
+          <article class="project-note-compact neo-card reveal {{ project.tone }}">
+            <div class="project-mini-top">
+              <div class="project-title-wrap">
+                <span class="project-index">{{ i + (visualProject ? 3 : 2) + secondaryShowcaseProjects.length }}</span>
+                <div class="project-mini-title-copy">
+                  <h3>{{ project.title }}</h3>
+                  <p>{{ project.scope }}</p>
+                </div>
+              </div>
+              <span class="project-stage">{{ project.stage }}</span>
             </div>
-          </aside>
+
+            <div class="project-note-copy">
+              <p class="project-note-lead">{{ project.description }}</p>
+              <div class="project-note-result-box">
+                <span>Outcome</span>
+                <p>{{ project.result }}</p>
+              </div>
+            </div>
+
+            <div class="project-card-action-row">
+              <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
+              <div class="project-proof-row">
+                @if (project.proofLinks.length > 0) {
+                  @for (link of project.proofLinks; track link.url) {
+                    <a
+                      class="proof-link"
+                      [class.proof-primary]="link.kind === 'live'"
+                      [class.proof-live]="link.kind === 'live'"
+                      [class.proof-docs]="link.kind === 'docs'"
+                      [class.proof-repo]="link.kind === 'repo'"
+                      [href]="link.url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      [attr.aria-label]="link.label + ' (opens in new tab)'"
+                    >
+                      <span>{{ link.label }}</span>
+                      <span class="proof-link-arrow" aria-hidden="true">&#8599;</span>
+                    </a>
+                  }
+                }
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    }
+    </div>
+
+    <div class="projects-mobile-shell">
+      @if (featuredProject; as project) {
+        <article class="project-mobile-card project-mobile-feature neo-card reveal {{ project.tone }}">
+          <div class="project-mobile-titleline">
+            <div class="project-title-wrap">
+              <span class="project-index">01</span>
+              <div class="project-mini-title-copy">
+                <h3>{{ project.title }}</h3>
+                <p>{{ project.scope }}</p>
+              </div>
+            </div>
+            <span class="project-stage">{{ project.stage }}</span>
+          </div>
+
+          <div class="project-mobile-tabs" role="tablist" [attr.aria-label]="project.title + ' mobile sections'">
+            <button
+              class="project-mobile-tab"
+              type="button"
+              [class.is-active]="getMobileProjectTab(project) === 'screens'"
+              (click)="setMobileProjectTab(project, 'screens')"
+            >
+              Screens
+            </button>
+            <button
+              class="project-mobile-tab"
+              type="button"
+              [class.is-active]="getMobileProjectTab(project) === 'overview'"
+              (click)="setMobileProjectTab(project, 'overview')"
+            >
+              Overview
+            </button>
+            <button
+              class="project-mobile-tab"
+              type="button"
+              [class.is-active]="getMobileProjectTab(project) === 'result'"
+              (click)="setMobileProjectTab(project, 'result')"
+            >
+              Result
+            </button>
+          </div>
+
+          <div class="project-mobile-panel">
+            @switch (getMobileProjectTab(project)) {
+              @case ('screens') {
+                @if (getActiveProjectMedia(project); as activeMedia) {
+                  <div class="project-mobile-preview-shell">
+                    <button
+                      class="project-mobile-preview-frame"
+                      type="button"
+                      [attr.aria-label]="'Open gallery for ' + project.title"
+                      (click)="openProjectGallery(project, getProjectMediaIndex(project))"
+                    >
+                      <div class="project-screen-frame">
+                        <div class="project-screen-topbar" aria-hidden="true">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </div>
+                        <div
+                          class="project-screen-canvas project-mobile-preview-canvas is-repair-canvas"
+                        >
+                          <img
+                            class="project-screen-image is-repair-focus"
+                            [style.objectFit]="getProjectMediaFit(activeMedia, 'hero')"
+                            [style.objectPosition]="getProjectMediaPosition(activeMedia, 'hero')"
+                            [style.transform]="getProjectMediaTransform(activeMedia, 'hero')"
+                            [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'hero')"
+                            [src]="activeMedia.src"
+                            [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                            loading="lazy"
+                          />
+                        </div>
+                      </div>
+                    </button>
+
+                    <div class="project-mobile-preview-controls is-compact">
+                      <span class="project-showcase-kicker">Featured Preview</span>
+                      <div class="project-mobile-preview-actions">
+                        @if (project.media.length > 1) {
+                          <button class="project-nav-btn" type="button" aria-label="Previous screenshot" (click)="prevProjectMedia(project)">
+                            &#8592;
+                          </button>
+                          <span class="project-showcase-count">{{ getProjectMediaIndex(project) + 1 }}/{{ project.media.length }}</span>
+                          <button class="project-nav-btn" type="button" aria-label="Next screenshot" (click)="nextProjectMedia(project)">
+                            &#8594;
+                          </button>
+                        }
+                        <button class="featured-gallery-btn" type="button" (click)="openProjectGallery(project, getProjectMediaIndex(project))">
+                          Open Gallery
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                <div class="featured-project-highlights project-mobile-chips">
+                  @for (metric of project.impactMetrics.slice(0, 2); track metric) {
+                    <span class="project-impact-chip">{{ metric }}</span>
+                  }
+                </div>
+
+                <div class="project-mobile-inline-summary">
+                  <span>Quick Read</span>
+                  <p>{{ project.description }}</p>
+                </div>
+
+                <div class="project-mobile-action-row">
+                  <button class="featured-gallery-btn is-secondary" type="button" (click)="setMobileProjectTab(project, 'result')">
+                    View Case
+                  </button>
+                  @if (project.proofLinks.length > 0) {
+                    @for (link of project.proofLinks.slice(0, 1); track link.url) {
+                      <a
+                        class="proof-link proof-primary"
+                        [class.proof-live]="link.kind === 'live'"
+                        [class.proof-docs]="link.kind === 'docs'"
+                        [class.proof-repo]="link.kind === 'repo'"
+                        [href]="link.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        [attr.aria-label]="link.label + ' (opens in new tab)'"
+                      >
+                        <span>{{ link.label }}</span>
+                        <span class="proof-link-arrow" aria-hidden="true">&#8599;</span>
+                      </a>
+                    }
+                  }
+                </div>
+              }
+
+              @case ('overview') {
+                <p class="project-mobile-lead">{{ project.description }}</p>
+
+                <div class="project-mobile-highlights-grid">
+                  <article>
+                    <span>Focus</span>
+                    <strong>{{ getMobileProjectPrimaryImpact(project) }}</strong>
+                  </article>
+                  <article>
+                    <span>Coverage</span>
+                    <strong>{{ getMobileProjectSecondaryImpact(project) }}</strong>
+                  </article>
+                </div>
+
+                <div class="featured-project-highlights project-mobile-chips">
+                  @for (metric of project.impactMetrics.slice(0, 2); track metric) {
+                    <span class="project-impact-chip">{{ metric }}</span>
+                  }
+                </div>
+
+                <div class="project-mobile-action-row">
+                  <button class="featured-gallery-btn is-secondary" type="button" (click)="setMobileProjectTab(project, 'screens')">
+                    Open Screens
+                  </button>
+                  <button class="featured-gallery-btn is-secondary" type="button" (click)="setMobileProjectTab(project, 'result')">
+                    View Result
+                  </button>
+                </div>
+              }
+
+              @case ('result') {
+                <div class="project-mobile-result">
+                  <span>Outcome</span>
+                  <p>{{ project.result }}</p>
+                </div>
+
+                <div class="project-mobile-meta">
+                  <article>
+                    <span>Role</span>
+                    <strong>{{ project.role }}</strong>
+                  </article>
+                  <article>
+                    <span>Impact</span>
+                    <strong>{{ project.impact }}</strong>
+                  </article>
+                </div>
+
+                <div class="project-mobile-footer">
+                  <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
+                  <div class="project-proof-row">
+                    @if (project.proofLinks.length > 0) {
+                      @for (link of project.proofLinks; track link.url) {
+                        <a
+                          class="proof-link"
+                          [class.proof-primary]="link.kind === 'live'"
+                          [class.proof-live]="link.kind === 'live'"
+                          [class.proof-docs]="link.kind === 'docs'"
+                          [class.proof-repo]="link.kind === 'repo'"
+                          [href]="link.url"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          [attr.aria-label]="link.label + ' (opens in new tab)'"
+                        >
+                          <span>{{ link.label }}</span>
+                          <span class="proof-link-arrow" aria-hidden="true">&#8599;</span>
+                        </a>
+                      }
+                    }
+                    @if (project.media.length > 0) {
+                      <button class="featured-gallery-btn is-secondary" type="button" (click)="openProjectGallery(project)">
+                        View Gallery
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
         </article>
+      }
+
+      @if (visualProject; as project) {
+        <article class="project-mobile-card project-mobile-device neo-card reveal {{ project.tone }}">
+          <div class="project-mobile-titleline">
+            <div class="project-title-wrap">
+              <span class="project-index">02</span>
+              <div class="project-mini-title-copy">
+                <h3>{{ project.title }}</h3>
+                <p>{{ project.scope }}</p>
+              </div>
+            </div>
+            <span class="project-stage">{{ project.stage }}</span>
+          </div>
+
+          <div class="project-mobile-tabs" role="tablist" [attr.aria-label]="project.title + ' mobile sections'">
+            <button
+              class="project-mobile-tab"
+              type="button"
+              [class.is-active]="getMobileProjectTab(project) === 'screens'"
+              (click)="setMobileProjectTab(project, 'screens')"
+            >
+              Screens
+            </button>
+            <button
+              class="project-mobile-tab"
+              type="button"
+              [class.is-active]="getMobileProjectTab(project) === 'overview'"
+              (click)="setMobileProjectTab(project, 'overview')"
+            >
+              Overview
+            </button>
+            <button
+              class="project-mobile-tab"
+              type="button"
+              [class.is-active]="getMobileProjectTab(project) === 'result'"
+              (click)="setMobileProjectTab(project, 'result')"
+            >
+              Result
+            </button>
+          </div>
+
+          <div class="project-mobile-panel">
+            @switch (getMobileProjectTab(project)) {
+              @case ('screens') {
+                <div class="project-mobile-device-switcher">
+                  <button
+                    class="project-mobile-device-toggle"
+                    type="button"
+                    [class.is-active]="getActiveMobileDeviceFrame(project) === 'desktop'"
+                    (click)="setActiveMobileDeviceFrame(project, 'desktop')"
+                  >
+                    Web Admin
+                  </button>
+                  <button
+                    class="project-mobile-device-toggle"
+                    type="button"
+                    [class.is-active]="getActiveMobileDeviceFrame(project) === 'mobile'"
+                    (click)="setActiveMobileDeviceFrame(project, 'mobile')"
+                  >
+                    Mobile App
+                  </button>
+                </div>
+
+                @if (getActiveMobileDeviceMedia(project); as activeMedia) {
+                  <button
+                    class="project-mobile-device-board"
+                    [class.is-mobile]="getActiveMobileDeviceFrame(project) === 'mobile'"
+                    type="button"
+                    (click)="openProjectGallery(project, getProjectMediaIndexByFrame(project, getActiveMobileDeviceFrame(project)), getActiveMobileDeviceFrame(project))"
+                  >
+                    <span class="project-device-kicker">
+                      {{ getActiveMobileDeviceFrame(project) === 'mobile' ? 'Mobile App' : 'Web Admin' }}
+                    </span>
+                    <img class="project-device-image" [src]="activeMedia.src" [alt]="project.title + ' preview'" loading="lazy" />
+                  </button>
+                }
+
+                <div class="featured-project-highlights project-mobile-chips">
+                  @for (metric of project.impactMetrics.slice(0, 2); track metric) {
+                    <span class="project-impact-chip">{{ metric }}</span>
+                  }
+                </div>
+
+                <div class="project-mobile-action-row">
+                  <button
+                    class="featured-gallery-btn is-secondary"
+                    type="button"
+                    (click)="openProjectGallery(project, getProjectMediaIndexByFrame(project, getActiveMobileDeviceFrame(project)), getActiveMobileDeviceFrame(project))"
+                  >
+                    {{ getActiveMobileDeviceFrame(project) === 'mobile' ? 'View Mobile' : 'View Web' }}
+                  </button>
+                  <button class="featured-gallery-btn is-secondary" type="button" (click)="setMobileProjectTab(project, 'result')">
+                    Project Result
+                  </button>
+                </div>
+              }
+
+              @case ('overview') {
+                <p class="project-mobile-lead">{{ project.description }}</p>
+
+                <div class="featured-project-highlights project-mobile-chips">
+                  @for (metric of project.impactMetrics.slice(0, 2); track metric) {
+                    <span class="project-impact-chip">{{ metric }}</span>
+                  }
+                </div>
+
+                <div class="project-mobile-highlights-grid">
+                  <article>
+                    <span>Flow</span>
+                    <strong>{{ getMobileProjectPrimaryImpact(project) }}</strong>
+                  </article>
+                  <article>
+                    <span>Delivery</span>
+                    <strong>{{ getMobileProjectSecondaryImpact(project) }}</strong>
+                  </article>
+                </div>
+              }
+
+              @case ('result') {
+                <div class="project-mobile-result">
+                  <span>Result</span>
+                  <p>{{ project.result }}</p>
+                </div>
+
+                <div class="project-mobile-footer">
+                  <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
+                  <div class="project-proof-row">
+                    @if (project.proofLinks.length > 0) {
+                      @for (link of project.proofLinks; track link.url) {
+                        <a
+                          class="proof-link"
+                          [class.proof-primary]="link.kind === 'live'"
+                          [class.proof-live]="link.kind === 'live'"
+                          [class.proof-docs]="link.kind === 'docs'"
+                          [class.proof-repo]="link.kind === 'repo'"
+                          [href]="link.url"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          [attr.aria-label]="link.label + ' (opens in new tab)'"
+                        >
+                          <span>{{ link.label }}</span>
+                          <span class="proof-link-arrow" aria-hidden="true">&#8599;</span>
+                        </a>
+                      }
+                    }
+                    <button class="featured-gallery-btn is-secondary" type="button" (click)="openProjectGallery(project)">
+                      View Gallery
+                    </button>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </article>
+      }
+
+      @if (secondaryShowcaseProjects.length > 0) {
+        <div class="project-mobile-stack">
+          @for (project of secondaryShowcaseProjects; track project.title; let i = $index) {
+            <article class="project-mobile-card project-mobile-visual neo-card reveal {{ project.tone }}">
+              <div class="project-mobile-titleline">
+                <div class="project-title-wrap">
+                  <span class="project-index">{{ i + (visualProject ? 3 : 2) }}</span>
+                  <div class="project-mini-title-copy">
+                    <h3>{{ project.title }}</h3>
+                    <p>{{ project.scope }}</p>
+                  </div>
+                </div>
+                <span class="project-stage">{{ project.stage }}</span>
+              </div>
+
+              @if (getActiveProjectMedia(project); as activeMedia) {
+                <button
+                  class="project-mobile-thumb-card"
+                  type="button"
+                  [attr.aria-label]="'Open gallery for ' + project.title"
+                  (click)="openProjectGallery(project)"
+                >
+                  <img
+                    class="project-mobile-thumb-image"
+                    [style.objectFit]="getProjectMediaFit(activeMedia, 'card')"
+                    [style.objectPosition]="getProjectMediaPosition(activeMedia, 'card')"
+                    [style.transform]="getProjectMediaTransform(activeMedia, 'card')"
+                    [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'card')"
+                    [src]="activeMedia.src"
+                    [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                    loading="lazy"
+                  />
+                  <span class="project-mini-count">{{ project.media.length }} screens</span>
+                </button>
+              }
+
+              <p class="project-mobile-summary">{{ project.result }}</p>
+
+              <div class="project-mobile-footer">
+                <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
+                <div class="project-proof-row">
+                  @if (project.proofLinks.length > 0) {
+                    @for (link of project.proofLinks; track link.url) {
+                      <a
+                        class="proof-link"
+                        [class.proof-primary]="link.kind === 'live'"
+                        [class.proof-live]="link.kind === 'live'"
+                        [class.proof-docs]="link.kind === 'docs'"
+                        [class.proof-repo]="link.kind === 'repo'"
+                        [href]="link.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        [attr.aria-label]="link.label + ' (opens in new tab)'"
+                      >
+                        <span>{{ link.label }}</span>
+                        <span class="proof-link-arrow" aria-hidden="true">&#8599;</span>
+                      </a>
+                    }
+                  }
+                  <button class="featured-gallery-btn is-secondary" type="button" (click)="openProjectGallery(project)">
+                    View Gallery
+                  </button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+
+      @if (caseNoteProjects.length > 0) {
+        <div class="project-mobile-stack project-mobile-notes">
+          @for (project of visibleCaseNoteProjects; track project.title; let i = $index) {
+            <article class="project-mobile-card project-mobile-note neo-card reveal {{ project.tone }}">
+              <div class="project-mobile-titleline">
+                <div class="project-title-wrap">
+                  <span class="project-index">{{ i + (visualProject ? 3 : 2) + secondaryShowcaseProjects.length }}</span>
+                  <div class="project-mini-title-copy">
+                    <h3>{{ project.title }}</h3>
+                    <p>{{ project.scope }}</p>
+                  </div>
+                </div>
+                <span class="project-stage">{{ project.stage }}</span>
+              </div>
+
+              <p class="project-mobile-note-lead">{{ project.description }}</p>
+
+              <div class="project-mobile-result">
+                <span>Outcome</span>
+                <p>{{ project.result }}</p>
+              </div>
+
+              <div class="project-mobile-footer">
+                <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
+                <div class="project-proof-row">
+                  @if (project.proofLinks.length > 0) {
+                    @for (link of project.proofLinks; track link.url) {
+                      <a
+                        class="proof-link"
+                        [class.proof-primary]="link.kind === 'live'"
+                        [class.proof-live]="link.kind === 'live'"
+                        [class.proof-docs]="link.kind === 'docs'"
+                        [class.proof-repo]="link.kind === 'repo'"
+                        [href]="link.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        [attr.aria-label]="link.label + ' (opens in new tab)'"
+                      >
+                        <span>{{ link.label }}</span>
+                        <span class="proof-link-arrow" aria-hidden="true">&#8599;</span>
+                      </a>
+                    }
+                  }
+                </div>
+              </div>
+            </article>
+          }
+
+          @if (hasMoreCaseNotes) {
+            <button class="project-more-btn project-mobile-more" type="button" (click)="toggleCaseNotes()">
+              {{ areCaseNotesExpanded ? 'Show Less' : 'Show More' }}
+            </button>
+          }
+        </div>
       }
     </div>
   </section>
 </main>
 
-<div class="mobile-cta-bar">
+<div class="mobile-cta-bar" [class.is-suppressed]="isProjectGalleryOpen || isResumePreviewOpen">
   <a class="mobile-cta-btn btn-yellow" [href]="'mailto:' + profile.email" aria-label="Hire me via email">Hire Me</a>
   <button class="mobile-cta-btn btn-cyan" type="button" aria-label="Open resume preview" (click)="openResumePreview()">
     View Resume
@@ -643,13 +1409,92 @@
   </div>
 }
 
-<aside class="chatbot-shell" [class.is-open]="isChatOpen" aria-label="Chat assistant widget">
+@if (isProjectGalleryOpen && projectGalleryProject; as galleryProject) {
+  <div class="project-gallery-overlay" role="presentation" (click)="closeProjectGallery()">
+    <section
+      class="project-gallery-modal neo-card"
+      [class.is-repair-modal]="galleryProject.title === 'Repair Management Monitoring System'"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="galleryProject.title + ' gallery'"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="project-gallery-head">
+        <div class="project-gallery-meta">
+          <p>Project Gallery</p>
+          <h3>{{ galleryProject.title }}</h3>
+        </div>
+        <div class="project-gallery-actions">
+          @if (galleryProjectMedia.length > 1) {
+            <button class="project-nav-btn" type="button" aria-label="Previous screenshot" (click)="prevOpenProjectGalleryMedia()">
+              &#8592;
+            </button>
+            <span class="project-showcase-count">{{ getGalleryMediaIndex() + 1 }}/{{ galleryProjectMedia.length }}</span>
+            <button class="project-nav-btn" type="button" aria-label="Next screenshot" (click)="nextOpenProjectGalleryMedia()">
+              &#8594;
+            </button>
+          }
+          <button class="neo-btn btn-pink" type="button" (click)="closeProjectGallery()">Close</button>
+        </div>
+      </header>
+
+      @if (getActiveGalleryMedia(); as galleryMedia) {
+        <div
+          class="project-gallery-stage"
+          [class.is-mobile-shot]="galleryMedia.frame === 'mobile'"
+          [class.is-poster-shot]="galleryMedia.frame === 'poster'"
+          [class.is-repair-stage]="galleryProject.title === 'Repair Management Monitoring System'"
+          [class.is-zoomed]="isGalleryZoomed"
+          [attr.role]="'button'"
+          [attr.tabindex]="0"
+          (click)="toggleGalleryZoom()"
+          (keydown.enter)="toggleGalleryZoom()"
+        >
+          <img
+            class="project-gallery-image"
+            [class.is-repair-focus]="galleryProject.title === 'Repair Management Monitoring System'"
+            [style.objectFit]="getProjectMediaFit(galleryMedia, 'gallery')"
+            [style.objectPosition]="getProjectMediaPosition(galleryMedia, 'gallery')"
+            [style.transform]="getGalleryImageTransform(galleryMedia)"
+            [style.transformOrigin]="getProjectMediaTransformOrigin(galleryMedia, 'gallery')"
+            [src]="galleryMedia.src"
+            [alt]="galleryProject.title + ' gallery image: ' + galleryMedia.label"
+            loading="lazy"
+          />
+        </div>
+      }
+
+      <div class="project-gallery-rail">
+        @for (mediaItem of galleryProjectMedia; track mediaItem.src; let mediaIndex = $index) {
+          <button
+            class="project-gallery-thumb"
+            type="button"
+            [class.is-mobile-thumb]="mediaItem.frame === 'mobile'"
+            [class.is-active]="getGalleryMediaIndex() === mediaIndex"
+            [attr.aria-pressed]="getGalleryMediaIndex() === mediaIndex"
+            (click)="setActiveGalleryMedia(mediaIndex)"
+          >
+            <img [src]="mediaItem.src" [alt]="galleryProject.title + ' gallery thumbnail: ' + mediaItem.label" loading="lazy" />
+            <span>{{ getMediaSlotLabel(mediaIndex) }}</span>
+          </button>
+        }
+      </div>
+    </section>
+  </div>
+}
+
+<aside
+  class="chatbot-shell"
+  [class.is-open]="isChatOpen"
+  [class.is-suppressed]="isProjectGalleryOpen || isResumePreviewOpen"
+  aria-label="Chat assistant widget"
+>
   @if (!isChatOpen) {
     <button class="chatbot-launch" type="button" aria-label="Open chat assistant" (click)="openChat()">
       <span class="chatbot-launch-avatar" aria-hidden="true">
         <img [src]="chatAvatarSrc" alt="" loading="lazy" />
       </span>
-      <span>Chat with Jericho</span>
+      <span class="chatbot-launch-label">Chat with Jericho</span>
       <span class="chatbot-launch-msgicon" aria-hidden="true">
         <svg viewBox="0 0 24 24">
           <path d="M4 4h16v11H8l-4 4V4zm2 2v8.2L7.2 13H18V6H6zm2.8 2h2.4v2H8.8V8zm3.6 0h2.4v2h-2.4V8z" />

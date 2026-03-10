@@ -1,4 +1,13 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  QueryList,
+  ViewChild,
+  ViewChildren,
+} from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 type StackItem = {
@@ -19,6 +28,48 @@ type ProjectProofLink = {
   kind: 'live' | 'docs' | 'repo';
 };
 
+type ProjectMediaCropRule = {
+  fit?: 'cover' | 'contain';
+  position?: string;
+  scale?: number;
+  origin?: string;
+};
+
+type ProjectMediaCrop = {
+  hero?: ProjectMediaCropRule;
+  card?: ProjectMediaCropRule;
+  gallery?: ProjectMediaCropRule;
+};
+
+type ProjectMediaItem = {
+  src: string;
+  label: string;
+  frame: 'desktop' | 'mobile' | 'poster';
+  crop?: ProjectMediaCrop;
+};
+
+const buildProjectMedia = (
+  folder: string,
+  frame: ProjectMediaItem['frame'],
+  entries: Array<number | string>,
+  labelPrefix: string,
+  cropByIndex?: (index: number) => ProjectMediaCrop | undefined,
+): ProjectMediaItem[] =>
+  entries.map((entry, index) => ({
+    src: `assets/${folder}/${entry}.png`,
+    label: `${labelPrefix} ${String(index + 1).padStart(2, '0')}`,
+    frame,
+    crop: cropByIndex?.(index),
+  }));
+
+const buildRepairMediaCrop = (_screenNumber: number): ProjectMediaCrop => ({
+  hero: { fit: 'cover', position: 'center center', scale: 1, origin: 'center center' },
+  card: { fit: 'cover', position: 'center center', scale: 1, origin: 'center center' },
+  gallery: { fit: 'cover', position: 'center center', scale: 1, origin: 'center center' },
+});
+
+const REPAIR_MEDIA_ENTRIES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+
 type ProjectItem = {
   title: string;
   description: string;
@@ -32,6 +83,7 @@ type ProjectItem = {
   result: string;
   tone: string;
   badges: string[];
+  media: ProjectMediaItem[];
 };
 
 type CertificationItem = {
@@ -93,6 +145,7 @@ type StatItem = {
 };
 
 type ThemeMode = 'light' | 'dark';
+type MobileProjectTab = 'overview' | 'screens' | 'result';
 
 type ChatMessageCta = {
   label: string;
@@ -114,11 +167,12 @@ type ChatReply = {
 @Component({
   selector: 'app-root',
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App implements AfterViewInit, OnDestroy {
   activeSection = 'home';
   isResumePreviewOpen = false;
+  isProjectGalleryOpen = false;
   isMobileMenuOpen = false;
   isPhotoRevealed = false;
   isPhoneCopied = false;
@@ -128,6 +182,8 @@ export class App implements AfterViewInit, OnDestroy {
   themeMode: ThemeMode = 'light';
   activeExperienceFilter: 'all' | 'contract' | 'freelance' | 'internship' = 'all';
   activeProjectFilter: 'all' | 'enterprise' | 'freelance' | 'academic' | 'web' | 'mobile' = 'all';
+  areCaseNotesExpanded = false;
+  readonly initialCaseNotesVisibleCount = 2;
   readonly collapsedHighlightCount = 2;
   private navLockSection: string | null = null;
   private navLockUntil = 0;
@@ -141,13 +197,27 @@ export class App implements AfterViewInit, OnDestroy {
   private chatAutoOpenTimer: number | null = null;
   private nextChatMessageId = 1;
   private catDomFrameIndex = 0;
+  private activeProjectMediaIndex: Record<string, number> = {};
+  private activeMobileProjectTab: Record<string, MobileProjectTab> = {};
+  private activeMobileDeviceFrame: Record<string, ProjectMediaItem['frame']> = {};
   private expandedExperienceRoles = new Set<string>();
   private readonly themeStorageKey = 'jericho-paper-theme';
   private readonly chatFirstVisitStorageKey = 'jericho-chat-first-visit-done';
   private readonly chatAutoOpenDelayMs = 2300;
   private readonly lightThemeClass = 'paper-light';
   private readonly darkThemeClass = 'paper-dark';
-  readonly resumeFileUrl = 'resume/JERICHO_SANTOS.pdf';
+  private projectGalleryFrameFilter: ProjectMediaItem['frame'] | null = null;
+  private projectGalleryActiveIndex = 0;
+  private readonly featuredProjectPriority = [
+    'Repair Management Monitoring System',
+    'Paragon S2S MMS (Enhancements and Maintenance)',
+    'PSMMS Version 2 UI Build',
+    "D'Speedwash App",
+    'QR Code-Based Service System',
+    'Bayani TTRPG',
+    'Apartease',
+  ];
+  readonly resumeFileUrl = 'resume/JERICHO SANTOS - 2026.pdf';
   readonly resumeViewerSrc: SafeResourceUrl;
   readonly maxChatChars = 1000;
   @ViewChildren('catFrameEl') private catFrameEls?: QueryList<ElementRef<HTMLImageElement>>;
@@ -155,20 +225,21 @@ export class App implements AfterViewInit, OnDestroy {
   private readonly catFrameCacheVersion = '20260303-1';
   readonly catFrameSources = Array.from(
     { length: 11 },
-    (_, index) => `assets/sprites/cat-frames/cat-walk-final-${index + 1}.png?v=${this.catFrameCacheVersion}`
+    (_, index) =>
+      `assets/sprites/cat-frames/cat-walk-final-${index + 1}.png?v=${this.catFrameCacheVersion}`,
   );
   readonly quickChatPrompts = [
     'What tech stack do you use?',
     'Show me your strongest projects.',
-    'How can I contact you?'
+    'How can I contact you?',
   ];
   readonly chatAvatarSrc = 'assets/profile/jericho-cartoon.png';
   readonly chatMessages: ChatMessage[] = [
     {
       id: 1,
       sender: 'bot',
-      text: 'Hi there. I am Jericho\'s portfolio assistant. Ask me about stack, projects, AI work, or hiring/contact details.'
-    }
+      text: "Hi there. I am Jericho's portfolio assistant. Ask me about stack, projects, AI work, or hiring/contact details.",
+    },
   ];
 
   readonly profile = {
@@ -176,7 +247,7 @@ export class App implements AfterViewInit, OnDestroy {
     role: 'Entry-Level Full Stack Developer',
     location: 'Valenzuela City, Philippines',
     email: 'jericho.santos1015@gmail.com',
-    phone: '+63 9694271892'
+    phone: '+63 9851569631',
   };
 
   readonly summary =
@@ -186,23 +257,23 @@ export class App implements AfterViewInit, OnDestroy {
     {
       label: 'LinkedIn',
       url: 'https://www.linkedin.com/in/jericho-santos-560496255',
-      icon: 'assets/icons/social/linkedin.svg'
+      icon: 'assets/icons/social/linkedin.svg',
     },
     {
       label: 'Instagram',
       url: 'https://www.instagram.com/j_ek15',
-      icon: 'assets/icons/social/instagram.svg'
+      icon: 'assets/icons/social/instagram.svg',
     },
     {
       label: 'Facebook',
       url: 'https://www.facebook.com/61581677857558',
-      icon: 'assets/icons/social/facebook.svg'
+      icon: 'assets/icons/social/facebook.svg',
     },
     {
       label: 'GitHub',
       url: 'https://github.com/ek7z',
-      icon: 'assets/icons/social/github.svg'
-    }
+      icon: 'assets/icons/social/github.svg',
+    },
   ];
 
   readonly heroMotto = 'Build practical products, ship fast, and keep code maintainable.';
@@ -210,14 +281,19 @@ export class App implements AfterViewInit, OnDestroy {
   readonly heroStats: HeroStat[] = [
     { label: 'Status', value: 'Open to Junior Roles', tone: 'stat-yellow' },
     { label: 'Track', value: 'Paragon Contract 2025-2026', tone: 'stat-cyan' },
-    { label: 'Focus', value: 'Ops Systems + Web/Mobile Delivery', tone: 'stat-pink' }
+    { label: 'Focus', value: 'Ops Systems + Web/Mobile Delivery', tone: 'stat-pink' },
   ];
 
-  readonly heroChips = ['Enterprise Delivery', 'SQL + Reporting', 'Workflow Automation', 'Hotfix Support'];
+  readonly heroChips = [
+    'Enterprise Delivery',
+    'SQL + Reporting',
+    'Workflow Automation',
+    'Hotfix Support',
+  ];
 
   constructor(private readonly sanitizer: DomSanitizer) {
     this.resumeViewerSrc = this.sanitizer.bypassSecurityTrustResourceUrl(
-      `${this.resumeFileUrl}#view=FitH`
+      `${this.resumeFileUrl}#view=FitH`,
     );
 
     if (typeof window !== 'undefined') {
@@ -236,27 +312,27 @@ export class App implements AfterViewInit, OnDestroy {
 
   readonly aboutCopy = [
     'I design and ship internal tools and client apps with clean UI, stable backend flows, and maintainable code.',
-    'Recent work covers PSMMS maintenance, repair operations build, and QR-based web/mobile workflow delivery.'
+    'Recent work covers PSMMS maintenance, repair operations build, and QR-based web/mobile workflow delivery.',
   ];
 
   readonly aboutMetrics: AboutMetric[] = [
     { label: 'Delivery Model', value: 'Contract + Freelance', tone: 'metric-yellow' },
     { label: 'Active Window', value: '2024 - 2026', tone: 'metric-cyan' },
-    { label: 'Core Strength', value: 'API + SQL + Reporting', tone: 'metric-pink' }
+    { label: 'Core Strength', value: 'API + SQL + Reporting', tone: 'metric-pink' },
   ];
 
   readonly aboutSnapshot: SnapshotItem[] = [
     { label: 'Based In', value: 'Valenzuela City, PH' },
     { label: 'Primary Stack', value: 'PHP, Angular, Ionic, MySQL' },
     { label: 'Platforms', value: 'Admin Web + Mobile Apps' },
-    { label: 'Team Value', value: 'Reliable Support + Fast Turnaround' }
+    { label: 'Team Value', value: 'Reliable Support + Fast Turnaround' },
   ];
 
   readonly aboutPillars: AboutPillar[] = [
     { token: 'UI', label: 'Interface Systems' },
     { token: 'API', label: 'Service Integration' },
     { token: 'DB', label: 'Data Integrity' },
-    { token: 'OPS', label: 'Reporting Flow' }
+    { token: 'OPS', label: 'Reporting Flow' },
   ];
 
   readonly quickFacts: ProofItem[] = [
@@ -264,32 +340,33 @@ export class App implements AfterViewInit, OnDestroy {
       mark: 'PRG',
       title: 'Paragon PSMMS Contract',
       detail: 'Delivered UI enhancements, SQL report fixes, role updates, and production hotfixes',
-      tone: 'fact-yellow'
+      tone: 'fact-yellow',
     },
     {
       mark: 'RMS',
       title: 'Repair System from Scratch',
       detail: 'Built request, dispatch, tracking, and reporting workflows for internal operations',
-      tone: 'fact-green'
+      tone: 'fact-green',
     },
     {
       mark: 'V2',
       title: 'PSMMS v2 UI Foundation',
       detail: 'Built reusable responsive screens using Angular + Tailwind for S2S/Bida/Fiber/SME',
-      tone: 'fact-cyan'
+      tone: 'fact-cyan',
     },
     {
       mark: 'QR',
       title: 'QR Service Platform',
-      detail: 'Shipped role-based admin + mobile workflow with booking lifecycle and status tracking',
-      tone: 'fact-pink'
-    }
+      detail:
+        'Shipped role-based admin + mobile workflow with booking lifecycle and status tracking',
+      tone: 'fact-pink',
+    },
   ];
 
   readonly education = {
     school: 'Pamantasan ng Lungsod ng Valenzuela',
     degree: 'Bachelor of Science in Information Technology',
-    period: '2021 - 2025'
+    period: '2021 - 2025',
   };
 
   readonly featuredStack: StackItem[] = [
@@ -300,7 +377,7 @@ export class App implements AfterViewInit, OnDestroy {
     { name: 'Node.js', icon: 'https://cdn.simpleicons.org/nodedotjs/339933', bg: '#e4ffd8' },
     { name: 'Express', icon: 'https://cdn.simpleicons.org/express/000000', bg: '#f1f1f1' },
     { name: 'MySQL', icon: 'https://cdn.simpleicons.org/mysql/4479A1', bg: '#ddf5ff' },
-    { name: 'Power BI', icon: 'assets/icons/powerbi.svg', bg: '#fff8c8' }
+    { name: 'Power BI', icon: 'assets/icons/powerbi.svg', bg: '#fff8c8' },
   ];
 
   readonly skillGroups = [
@@ -313,8 +390,8 @@ export class App implements AfterViewInit, OnDestroy {
         { label: 'TypeScript', icon: 'https://cdn.simpleicons.org/typescript/3178C6' },
         { label: 'HTML', icon: 'https://cdn.simpleicons.org/html5/E34F26' },
         { label: 'CSS', icon: 'https://cdn.simpleicons.org/css/1572B6' },
-        { label: 'JavaScript', icon: 'https://cdn.simpleicons.org/javascript/F7DF1E' }
-      ] as SkillItem[]
+        { label: 'JavaScript', icon: 'https://cdn.simpleicons.org/javascript/F7DF1E' },
+      ] as SkillItem[],
     },
     {
       title: 'Backend',
@@ -324,8 +401,8 @@ export class App implements AfterViewInit, OnDestroy {
         { label: 'Node.js', icon: 'https://cdn.simpleicons.org/nodedotjs/339933' },
         { label: 'Express.js', icon: 'https://cdn.simpleicons.org/express/000000' },
         { label: 'REST APIs', token: 'API' },
-        { label: 'MySQL Workbench', icon: 'https://cdn.simpleicons.org/mysql/4479A1' }
-      ] as SkillItem[]
+        { label: 'MySQL Workbench', icon: 'https://cdn.simpleicons.org/mysql/4479A1' },
+      ] as SkillItem[],
     },
     {
       title: 'Data and Ops',
@@ -334,8 +411,8 @@ export class App implements AfterViewInit, OnDestroy {
         { label: 'Power BI', icon: 'assets/icons/powerbi.svg' },
         { label: 'SQL', icon: 'https://cdn.simpleicons.org/mysql/4479A1' },
         { label: 'Data Cleaning', token: 'DC' },
-        { label: 'System Administration Basics', token: 'SYS' }
-      ] as SkillItem[]
+        { label: 'System Administration Basics', token: 'SYS' },
+      ] as SkillItem[],
     },
     {
       title: 'Core Strengths',
@@ -344,22 +421,22 @@ export class App implements AfterViewInit, OnDestroy {
         { label: 'Technical Support', token: 'TS' },
         { label: 'Troubleshooting', token: 'BUG' },
         { label: 'Technical Documentation', token: 'DOC' },
-        { label: 'Analytical Problem-Solving', token: 'PS' }
-      ] as SkillItem[]
-    }
+        { label: 'Analytical Problem-Solving', token: 'PS' },
+      ] as SkillItem[],
+    },
   ];
 
   readonly experienceStats: StatItem[] = [
     { label: 'Hands-on Roles', value: '3 Real-World Roles', tone: 'metric-yellow' },
     { label: 'Timeline', value: '2024 - 2026', tone: 'metric-cyan' },
-    { label: 'Coverage', value: 'Enterprise + Client + Data', tone: 'metric-pink' }
+    { label: 'Coverage', value: 'Enterprise + Client + Data', tone: 'metric-pink' },
   ];
 
   readonly experienceFilters = [
     { id: 'all', label: 'All Roles' },
     { id: 'contract', label: 'Contract' },
     { id: 'freelance', label: 'Freelance' },
-    { id: 'internship', label: 'Internship' }
+    { id: 'internship', label: 'Internship' },
   ] as const;
 
   readonly experiences: ExperienceItem[] = [
@@ -374,8 +451,8 @@ export class App implements AfterViewInit, OnDestroy {
         'Refactored legacy PSMMS pages and responsiveness across mobile, tablet, and desktop views.',
         'Corrected SQL queries, filtering, and aggregation logic; added date-range and status-summary reports.',
         'Delivered workflow/permission updates, production hotfixes, and stakeholder-validated releases.',
-        'Supported related internal modules under the same Paragon contract, including repair and PSMMS v2 deliverables.'
-      ]
+        'Supported related internal modules under the same Paragon contract, including repair and PSMMS v2 deliverables.',
+      ],
     },
     {
       role: 'Freelance Full-Stack Developer',
@@ -387,8 +464,8 @@ export class App implements AfterViewInit, OnDestroy {
       highlights: [
         'Delivered QR-based service system with admin website plus mobile apps for customer, laborer, and rider roles.',
         'Implemented OTP auth, role-based routing, and booking lifecycle rules with controlled edit/cancel behavior.',
-        'Built KPI dashboard, service/user/booking modules, alerts, and pricing-lock logic for operational stability.'
-      ]
+        'Built KPI dashboard, service/user/booking modules, alerts, and pricing-lock logic for operational stability.',
+      ],
     },
     {
       role: 'OJT Intern - DevOps Team',
@@ -400,31 +477,31 @@ export class App implements AfterViewInit, OnDestroy {
       highlights: [
         'Built and maintained Power BI dashboards for internal operations reporting.',
         'Prepared multi-department datasets and wrote SQL scripts for extraction, filtering, and shaping.',
-        'Gained exposure to enterprise data pipelines and DevOps workflow practices.'
-      ]
-    }
+        'Gained exposure to enterprise data pipelines and DevOps workflow practices.',
+      ],
+    },
   ];
 
   readonly certificationStats: StatItem[] = [
     { label: 'Certificates', value: '4 Completed', tone: 'metric-yellow' },
-    { label: 'Focus Areas', value: 'AI + Agile + Privacy', tone: 'metric-cyan' }
+    { label: 'Focus Areas', value: 'AI + Agile + Privacy', tone: 'metric-cyan' },
   ];
 
   readonly certSignals: StatItem[] = [
     { label: 'Applied In', value: 'PSMMS + Client Systems', tone: 'metric-yellow' },
     { label: 'Delivery Mode', value: 'Release + Hotfix Cycles', tone: 'metric-cyan' },
-    { label: 'Impact Style', value: 'Workflow + Reporting Accuracy', tone: 'metric-pink' }
+    { label: 'Impact Style', value: 'Workflow + Reporting Accuracy', tone: 'metric-pink' },
   ];
 
   readonly certApplicationNotes = [
     'Used structured release planning and staged validation in production updates.',
-    'Applied reporting and data principles to SQL filtering, aggregation, and dashboard outputs.'
+    'Applied reporting and data principles to SQL filtering, aggregation, and dashboard outputs.',
   ];
 
   readonly projectStats: StatItem[] = [
-    { label: 'Project Set', value: '6 Flagship Case Builds', tone: 'metric-yellow' },
+    { label: 'Project Set', value: '7 Flagship Case Builds', tone: 'metric-yellow' },
     { label: 'Client Work', value: 'Paragon + Freelance Delivery', tone: 'metric-cyan' },
-    { label: 'System Type', value: 'Web + Mobile + Ops Reporting', tone: 'metric-pink' }
+    { label: 'System Type', value: 'Web + Mobile + Ops Reporting', tone: 'metric-pink' },
   ];
 
   readonly projectFilters = [
@@ -433,7 +510,7 @@ export class App implements AfterViewInit, OnDestroy {
     { id: 'freelance', label: 'Freelance' },
     { id: 'academic', label: 'Academic' },
     { id: 'web', label: 'Web' },
-    { id: 'mobile', label: 'Mobile' }
+    { id: 'mobile', label: 'Mobile' },
   ] as const;
 
   readonly projects: ProjectItem[] = [
@@ -444,13 +521,19 @@ export class App implements AfterViewInit, OnDestroy {
       stage: 'Contract Delivery',
       scope: 'Module Enhancements + Reporting',
       impact: 'Lower UI defects and cleaner operational decision data',
-      impactMetrics: ['3 Reporting Additions', 'Cross-Device Responsive', 'Ongoing Hotfix Releases'],
+      impactMetrics: [
+        '3 Reporting Additions',
+        'Cross-Device Responsive',
+        'Ongoing Hotfix Releases',
+      ],
       filters: ['enterprise', 'web'],
       proofLinks: [{ label: 'Open Live', url: 'https://paragoncorpmms.com/', kind: 'live' }],
-      role: 'Full-Stack Developer (Solo)',
-      result: 'Stabilized production workflows through responsive refactors, SQL fixes, and filtered report screens.',
+      role: 'Full-Stack Developer',
+      result:
+        'Stabilized production workflows through responsive refactors, SQL fixes, and filtered report screens.',
       tone: 'project-yellow',
-      badges: ['HTML', 'CSS', 'JavaScript', 'PHP', 'MySQL']
+      badges: ['HTML', 'CSS', 'JavaScript', 'PHP', 'MySQL'],
+      media: [],
     },
     {
       title: 'Repair Management Monitoring System',
@@ -462,10 +545,18 @@ export class App implements AfterViewInit, OnDestroy {
       impactMetrics: ['Built from Scratch', '5 Core Modules', 'Query + Index Optimization'],
       filters: ['enterprise', 'web'],
       proofLinks: [{ label: 'Open Live', url: 'https://repair.paragoncorpmms.com/', kind: 'live' }],
-      role: 'Full-Stack Developer (Solo)',
-      result: 'Deployed request-to-dispatch lifecycle with tracking history, report tables, and optimized query performance.',
+      role: 'Full-Stack Developer',
+      result:
+        'Deployed request-to-dispatch lifecycle with tracking history, report tables, and optimized query performance.',
       tone: 'project-cyan',
-      badges: ['HTML', 'CSS', 'JavaScript', 'PHP', 'MySQL']
+      badges: ['HTML', 'CSS', 'JavaScript', 'PHP', 'MySQL'],
+      media: buildProjectMedia(
+        'Repair',
+        'desktop',
+        REPAIR_MEDIA_ENTRIES,
+        'Repair Screen',
+        (index) => buildRepairMediaCrop(index + 1),
+      ),
     },
     {
       title: 'PSMMS Version 2 UI Build',
@@ -477,10 +568,17 @@ export class App implements AfterViewInit, OnDestroy {
       impactMetrics: ['4 Product Lines', 'Reusable Screen Patterns', 'Integration-Ready UI'],
       filters: ['enterprise', 'web'],
       proofLinks: [{ label: 'Open Live', url: 'https://test.paragoncorpmms.com/', kind: 'live' }],
-      role: 'Full-Stack Developer (Solo)',
-      result: 'Built reusable screens and navigation patterns, then handed off integration-ready UI before project hold.',
+      role: 'Full-Stack Developer',
+      result:
+        'Built reusable screens and navigation patterns, then handed off integration-ready UI before project hold.',
       tone: 'project-pink',
-      badges: ['Angular', 'Tailwind']
+      badges: ['Angular', 'Tailwind'],
+      media: buildProjectMedia(
+        'Paragon V2 UI',
+        'desktop',
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        'UI Screen',
+      ),
     },
     {
       title: 'QR Code-Based Service System',
@@ -492,10 +590,12 @@ export class App implements AfterViewInit, OnDestroy {
       impactMetrics: ['4 Role Flows', 'OTP + Role Routing', 'Live Status Lifecycle'],
       filters: ['freelance', 'web', 'mobile'],
       proofLinks: [],
-      role: 'Full-Stack Developer (Solo)',
-      result: 'Launched QR-based platform with OTP auth, role routing, lifecycle controls, and near real-time dashboard alerts.',
+      role: 'Full-Stack Developer',
+      result:
+        'Launched QR-based platform with OTP auth, role routing, lifecycle controls, and near real-time dashboard alerts.',
       tone: 'project-yellow',
-      badges: ['Ionic', 'Angular', 'Node.js', 'Express', 'MySQL']
+      badges: ['Ionic', 'Angular', 'Node.js', 'Express', 'MySQL'],
+      media: [],
     },
     {
       title: "D'Speedwash App",
@@ -507,10 +607,47 @@ export class App implements AfterViewInit, OnDestroy {
       impactMetrics: ['Capstone Delivery', 'Mobile + Admin Flow', 'End-to-End Booking'],
       filters: ['academic', 'web', 'mobile'],
       proofLinks: [],
-      role: 'Full-Stack Developer (Solo)',
-      result: 'Delivered app-first booking and admin control flow to simplify customer scheduling operations.',
+      role: 'Full-Stack Developer',
+      result:
+        'Delivered app-first booking and admin control flow to simplify customer scheduling operations.',
       tone: 'project-cyan',
-      badges: ['Ionic', 'Angular', 'Node.js', 'Express', 'MySQL']
+      badges: ['Ionic', 'Angular', 'Node.js', 'Express', 'MySQL'],
+      media: [
+        ...buildProjectMedia(
+          'DSpeedWash',
+          'desktop',
+          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+          'Web Admin',
+        ),
+        ...buildProjectMedia(
+          'DSpeedWash/app',
+          'mobile',
+          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+          'Mobile App',
+        ),
+      ],
+    },
+    {
+      title: 'Bayani TTRPG',
+      description:
+        'Game project needed a strong visual identity and a presentable playable interface for the subject showcase.',
+      stage: 'Academic Game Build',
+      scope: 'Menu + Visual Presentation',
+      impact: 'Stronger presentation quality for a concept-driven TTRPG project',
+      impactMetrics: ['Game Subject Build', 'Menu Screen Polish', 'Lore-Driven Visual Tone'],
+      filters: ['academic'],
+      proofLinks: [],
+      role: 'Full-Stack Developer',
+      result:
+        'Built and presented the Bayani TTRPG concept with a stylized start screen and world-driven visual direction.',
+      tone: 'project-pink',
+      badges: ['GameDev', 'TTRPG', 'Story Systems'],
+      media: buildProjectMedia(
+        'Bayani TTRPG',
+        'poster',
+        [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15],
+        'Bayani Scene',
+      ),
     },
     {
       title: 'Apartease',
@@ -522,11 +659,13 @@ export class App implements AfterViewInit, OnDestroy {
       impactMetrics: ['Web Admin Panel', 'CRUD Operations', 'Records Centralization'],
       filters: ['academic', 'web'],
       proofLinks: [],
-      role: 'Full-Stack Developer (Solo)',
-      result: 'Built management website for apartment operations, records handling, and admin-side tracking.',
+      role: 'Full-Stack Developer',
+      result:
+        'Built management website for apartment operations, records handling, and admin-side tracking.',
       tone: 'project-green',
-      badges: ['HTML', 'CSS', 'JavaScript', 'PHP']
-    }
+      badges: ['HTML', 'CSS', 'JavaScript', 'PHP'],
+      media: [],
+    },
   ];
 
   readonly certifications: CertificationItem[] = [
@@ -534,34 +673,42 @@ export class App implements AfterViewInit, OnDestroy {
       title: 'DEEP IMPACT: The Impact of AI to the Future of Web Development',
       provider: 'PLV',
       date: 'April 2024',
-      mark: 'AI'
+      mark: 'AI',
     },
     {
       title: 'SCRUM 101: The Introduction',
       provider: 'PLV',
       date: 'April 2024',
-      mark: 'SCR'
+      mark: 'SCR',
     },
     {
       title: 'DATA PRIVACY ESSENTIALS',
       provider: 'PLV',
       date: 'April 2024',
-      mark: 'DP'
+      mark: 'DP',
     },
     {
       title: 'The IT Things Called Multimedia',
       provider: 'PLV',
       date: 'April 2024',
-      mark: 'MM'
-    }
+      mark: 'MM',
+    },
   ];
+
+  projectGalleryProject: ProjectItem | null = null;
+  isGalleryZoomed = false;
 
   setActive(sectionId: string): void {
     this.activeSection = sectionId;
   }
 
   setExperienceFilter(filter: string): void {
-    if (filter === 'all' || filter === 'contract' || filter === 'freelance' || filter === 'internship') {
+    if (
+      filter === 'all' ||
+      filter === 'contract' ||
+      filter === 'freelance' ||
+      filter === 'internship'
+    ) {
       this.activeExperienceFilter = filter;
       this.refreshRevealAfterFilterChange();
     }
@@ -577,8 +724,15 @@ export class App implements AfterViewInit, OnDestroy {
       filter === 'mobile'
     ) {
       this.activeProjectFilter = filter;
+      this.areCaseNotesExpanded = false;
+      this.closeProjectGallery();
       this.refreshRevealAfterFilterChange();
     }
+  }
+
+  toggleCaseNotes(): void {
+    this.areCaseNotesExpanded = !this.areCaseNotesExpanded;
+    this.refreshRevealAfterFilterChange();
   }
 
   get filteredExperiences(): ExperienceItem[] {
@@ -595,6 +749,361 @@ export class App implements AfterViewInit, OnDestroy {
     }
 
     return this.projects.filter((project) => project.filters.includes(this.activeProjectFilter));
+  }
+
+  get featuredProject(): ProjectItem | null {
+    if (!this.filteredProjects.length) {
+      return null;
+    }
+
+    for (const title of this.featuredProjectPriority) {
+      const matchedProject = this.filteredProjects.find((project) => project.title === title);
+      if (matchedProject) {
+        return matchedProject;
+      }
+    }
+
+    return this.filteredProjects[0] ?? null;
+  }
+
+  get secondaryProjects(): ProjectItem[] {
+    const featuredProject = this.featuredProject;
+
+    if (!featuredProject) {
+      return [];
+    }
+
+    return this.filteredProjects.filter((project) => project.title !== featuredProject.title);
+  }
+
+  get visualProject(): ProjectItem | null {
+    const featuredProject = this.featuredProject;
+    const dSpeedwashProject =
+      this.filteredProjects.find((project) => project.title === "D'Speedwash App") ?? null;
+
+    if (!dSpeedwashProject || dSpeedwashProject.title === featuredProject?.title) {
+      return null;
+    }
+
+    return dSpeedwashProject;
+  }
+
+  get compactProjects(): ProjectItem[] {
+    const featuredProject = this.featuredProject;
+    const visualProject = this.visualProject;
+
+    return this.filteredProjects.filter((project) => {
+      if (project.title === featuredProject?.title) {
+        return false;
+      }
+
+      if (project.title === visualProject?.title) {
+        return false;
+      }
+
+      return true;
+    });
+  }
+
+  get secondaryShowcaseProjects(): ProjectItem[] {
+    return this.compactProjects.filter((project) => project.media.length > 0);
+  }
+
+  get caseNoteProjects(): ProjectItem[] {
+    return this.compactProjects.filter((project) => project.media.length === 0);
+  }
+
+  get visibleCaseNoteProjects(): ProjectItem[] {
+    if (this.areCaseNotesExpanded) {
+      return this.caseNoteProjects;
+    }
+
+    return this.caseNoteProjects.slice(0, this.initialCaseNotesVisibleCount);
+  }
+
+  get hasMoreCaseNotes(): boolean {
+    return this.caseNoteProjects.length > this.initialCaseNotesVisibleCount;
+  }
+
+  getActiveProjectMedia(project: ProjectItem): ProjectMediaItem | null {
+    if (!project.media.length) {
+      return null;
+    }
+
+    const nextIndex = this.activeProjectMediaIndex[project.title] ?? 0;
+    return project.media[nextIndex] ?? project.media[0] ?? null;
+  }
+
+  setActiveProjectMedia(project: ProjectItem, index: number): void {
+    if (index < 0 || index >= project.media.length) {
+      return;
+    }
+
+    this.activeProjectMediaIndex[project.title] = index;
+  }
+
+  getProjectMediaIndex(project: ProjectItem): number {
+    if (!project.media.length) {
+      return 0;
+    }
+
+    const nextIndex = this.activeProjectMediaIndex[project.title] ?? 0;
+    return Math.min(Math.max(nextIndex, 0), project.media.length - 1);
+  }
+
+  nextProjectMedia(project: ProjectItem): void {
+    if (!project.media.length) {
+      return;
+    }
+
+    const nextIndex = (this.getProjectMediaIndex(project) + 1) % project.media.length;
+    this.activeProjectMediaIndex[project.title] = nextIndex;
+  }
+
+  prevProjectMedia(project: ProjectItem): void {
+    if (!project.media.length) {
+      return;
+    }
+
+    const nextIndex =
+      (this.getProjectMediaIndex(project) - 1 + project.media.length) % project.media.length;
+    this.activeProjectMediaIndex[project.title] = nextIndex;
+  }
+
+  getProjectPreviewBadges(project: ProjectItem): string[] {
+    return project.badges.slice(0, 3);
+  }
+
+  getMobileProjectTab(project: ProjectItem): MobileProjectTab {
+    return this.activeMobileProjectTab[project.title] ?? (project.media.length > 0 ? 'screens' : 'overview');
+  }
+
+  setMobileProjectTab(project: ProjectItem, tab: MobileProjectTab): void {
+    this.activeMobileProjectTab[project.title] = tab;
+  }
+
+  getMobileProjectPrimaryImpact(project: ProjectItem): string {
+    return project.impactMetrics[0] ?? project.impact;
+  }
+
+  getMobileProjectSecondaryImpact(project: ProjectItem): string {
+    return project.impactMetrics[1] ?? project.scope;
+  }
+
+  getActiveMobileDeviceFrame(project: ProjectItem): ProjectMediaItem['frame'] {
+    return this.activeMobileDeviceFrame[project.title] ?? 'desktop';
+  }
+
+  setActiveMobileDeviceFrame(project: ProjectItem, frame: ProjectMediaItem['frame']): void {
+    this.activeMobileDeviceFrame[project.title] = frame;
+  }
+
+  getActiveMobileDeviceMedia(project: ProjectItem): ProjectMediaItem | null {
+    return this.getProjectMediaByFrame(project, this.getActiveMobileDeviceFrame(project));
+  }
+
+  getProjectStackSummary(project: ProjectItem): string {
+    const baseBadges = project.badges.slice(0, 3);
+    const remainingCount = Math.max(project.badges.length - baseBadges.length, 0);
+    return remainingCount > 0
+      ? `${baseBadges.join(' � ')} +${remainingCount}`
+      : baseBadges.join(' � ');
+  }
+
+  getProjectMediaStyle(
+    media: ProjectMediaItem,
+    variant: 'hero' | 'card' | 'gallery',
+  ): Record<string, string> {
+    const crop = media.crop?.[variant];
+    if (!crop) {
+      return {};
+    }
+
+    const style: Record<string, string> = {};
+
+    if (crop.fit) {
+      style['object-fit'] = crop.fit;
+    }
+
+    if (crop.position) {
+      style['object-position'] = crop.position;
+    }
+
+    if (crop.scale && crop.scale !== 1) {
+      style['transform'] = `scale(${crop.scale})`;
+      style['transform-origin'] = crop.origin ?? 'center center';
+    }
+
+    return style;
+  }
+
+  getProjectMediaFit(media: ProjectMediaItem, variant: 'hero' | 'card' | 'gallery'): string | null {
+    return media.crop?.[variant]?.fit ?? null;
+  }
+
+  getProjectMediaPosition(
+    media: ProjectMediaItem,
+    variant: 'hero' | 'card' | 'gallery',
+  ): string | null {
+    return media.crop?.[variant]?.position ?? null;
+  }
+
+  getProjectMediaTransform(
+    media: ProjectMediaItem,
+    variant: 'hero' | 'card' | 'gallery',
+  ): string | null {
+    const scale = media.crop?.[variant]?.scale;
+    if (!scale || scale === 1) {
+      return null;
+    }
+
+    return `scale(${scale})`;
+  }
+
+  getGalleryImageTransform(media: ProjectMediaItem): string | null {
+    const baseScale = media.crop?.gallery?.scale ?? 1;
+    const nextScale = this.isGalleryZoomed ? baseScale * 1.6 : baseScale;
+
+    if (nextScale === 1) {
+      return null;
+    }
+
+    return `scale(${nextScale})`;
+  }
+
+  getProjectMediaTransformOrigin(
+    media: ProjectMediaItem,
+    variant: 'hero' | 'card' | 'gallery',
+  ): string | null {
+    const rule = media.crop?.[variant];
+    if (!rule || !rule.scale || rule.scale === 1) {
+      return null;
+    }
+
+    return rule.origin ?? 'center center';
+  }
+
+  getMediaSlotLabel(index: number): string {
+    return String(index + 1).padStart(2, '0');
+  }
+
+  getProjectMediaByFrame(
+    project: ProjectItem,
+    frame: ProjectMediaItem['frame'],
+  ): ProjectMediaItem | null {
+    return project.media.find((mediaItem) => mediaItem.frame === frame) ?? null;
+  }
+
+  getProjectMediaIndexByFrame(project: ProjectItem, frame: ProjectMediaItem['frame']): number {
+    const mediaIndex = project.media.findIndex((mediaItem) => mediaItem.frame === frame);
+    return mediaIndex >= 0 ? mediaIndex : 0;
+  }
+
+  get galleryProjectMedia(): ProjectMediaItem[] {
+    if (!this.projectGalleryProject) {
+      return [];
+    }
+
+    if (!this.projectGalleryFrameFilter) {
+      return this.projectGalleryProject.media;
+    }
+
+    return this.projectGalleryProject.media.filter(
+      (mediaItem) => mediaItem.frame === this.projectGalleryFrameFilter,
+    );
+  }
+
+  getActiveGalleryMedia(): ProjectMediaItem | null {
+    const media = this.galleryProjectMedia;
+    if (!media.length) {
+      return null;
+    }
+
+    return media[this.getGalleryMediaIndex()] ?? media[0] ?? null;
+  }
+
+  getGalleryMediaIndex(): number {
+    const media = this.galleryProjectMedia;
+    if (!media.length) {
+      return 0;
+    }
+
+    return Math.min(Math.max(this.projectGalleryActiveIndex, 0), media.length - 1);
+  }
+
+  setActiveGalleryMedia(index: number): void {
+    const media = this.galleryProjectMedia;
+    if (!media.length || index < 0 || index >= media.length) {
+      return;
+    }
+
+    this.projectGalleryActiveIndex = index;
+    this.isGalleryZoomed = false;
+  }
+
+  openProjectGallery(
+    project: ProjectItem,
+    index = 0,
+    frameFilter: ProjectMediaItem['frame'] | null = null,
+  ): void {
+    if (!project.media.length) {
+      return;
+    }
+
+    this.projectGalleryProject = project;
+    this.projectGalleryFrameFilter = frameFilter;
+
+    const media = this.galleryProjectMedia;
+    if (!media.length) {
+      return;
+    }
+
+    if (frameFilter) {
+      const targetMedia = project.media[index] ?? null;
+      const filteredIndex = targetMedia
+        ? media.findIndex((mediaItem) => mediaItem.src === targetMedia.src)
+        : 0;
+      this.projectGalleryActiveIndex = filteredIndex >= 0 ? filteredIndex : 0;
+    } else {
+      this.projectGalleryActiveIndex = Math.min(Math.max(index, 0), media.length - 1);
+    }
+
+    this.setActiveProjectMedia(project, index);
+    this.isProjectGalleryOpen = true;
+    this.isGalleryZoomed = false;
+  }
+
+  closeProjectGallery(): void {
+    this.isProjectGalleryOpen = false;
+    this.projectGalleryProject = null;
+    this.projectGalleryFrameFilter = null;
+    this.projectGalleryActiveIndex = 0;
+    this.isGalleryZoomed = false;
+  }
+
+  nextOpenProjectGalleryMedia(): void {
+    const media = this.galleryProjectMedia;
+    if (!media.length) {
+      return;
+    }
+
+    this.projectGalleryActiveIndex = (this.getGalleryMediaIndex() + 1) % media.length;
+    this.isGalleryZoomed = false;
+  }
+
+  prevOpenProjectGalleryMedia(): void {
+    const media = this.galleryProjectMedia;
+    if (!media.length) {
+      return;
+    }
+
+    this.projectGalleryActiveIndex =
+      (this.getGalleryMediaIndex() - 1 + media.length) % media.length;
+    this.isGalleryZoomed = false;
+  }
+
+  toggleGalleryZoom(): void {
+    this.isGalleryZoomed = !this.isGalleryZoomed;
   }
 
   onNavSelect(sectionId: string): void {
@@ -883,7 +1392,9 @@ export class App implements AfterViewInit, OnDestroy {
     const navHeight = nav?.getBoundingClientRect().height ?? 88;
 
     const host = document.querySelector('app-root');
-    const cssOffsetRaw = host ? getComputedStyle(host).getPropertyValue('--anchor-offset').trim() : '';
+    const cssOffsetRaw = host
+      ? getComputedStyle(host).getPropertyValue('--anchor-offset').trim()
+      : '';
     const cssOffsetPx = this.toPixels(cssOffsetRaw);
 
     return Math.max(navHeight + 20, cssOffsetPx - 4);
@@ -906,7 +1417,7 @@ export class App implements AfterViewInit, OnDestroy {
       window.scrollTo({
         top: 0,
         left: 0,
-        behavior: 'auto'
+        behavior: 'auto',
       });
 
       this.activeSection = 'home';
@@ -933,7 +1444,7 @@ export class App implements AfterViewInit, OnDestroy {
     window.scrollTo({
       top: Math.max(0, top),
       left: 0,
-      behavior: 'auto'
+      behavior: 'auto',
     });
 
     if (finalize) {
@@ -955,7 +1466,7 @@ export class App implements AfterViewInit, OnDestroy {
       window.scrollTo({
         top: 0,
         left: 0,
-        behavior: 'auto'
+        behavior: 'auto',
       });
       this.activeSection = 'home';
     };
@@ -966,7 +1477,7 @@ export class App implements AfterViewInit, OnDestroy {
       window.setTimeout(forceHomeTop, 40),
       window.setTimeout(forceHomeTop, 140),
       window.setTimeout(forceHomeTop, 320),
-      window.setTimeout(forceHomeTop, 620)
+      window.setTimeout(forceHomeTop, 620),
     );
 
     window.addEventListener(
@@ -974,7 +1485,7 @@ export class App implements AfterViewInit, OnDestroy {
       () => {
         forceHomeTop();
       },
-      { once: true }
+      { once: true },
     );
   }
 
@@ -989,7 +1500,8 @@ export class App implements AfterViewInit, OnDestroy {
     }
 
     if (value.endsWith('rem')) {
-      const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const rootFontSize =
+        Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
       return numericValue * rootFontSize;
     }
 
@@ -1031,12 +1543,16 @@ export class App implements AfterViewInit, OnDestroy {
       {
         root: null,
         threshold: [0, 0.16, 0.35],
-        rootMargin: '0px 0px -8% 0px'
-      }
+        rootMargin: '0px 0px -8% 0px',
+      },
     );
 
     for (const [index, item] of revealItems.entries()) {
-      if (!item.classList.contains('delay-1') && !item.classList.contains('delay-2') && !item.classList.contains('delay-3')) {
+      if (
+        !item.classList.contains('delay-1') &&
+        !item.classList.contains('delay-2') &&
+        !item.classList.contains('delay-3')
+      ) {
         item.style.setProperty('--reveal-delay', `${(index % 4) * 50}ms`);
       }
 
@@ -1083,7 +1599,8 @@ export class App implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const safeNext = ((nextFrame % frameElements.length) + frameElements.length) % frameElements.length;
+    const safeNext =
+      ((nextFrame % frameElements.length) + frameElements.length) % frameElements.length;
     const currentEl = frameElements[this.catDomFrameIndex];
     const nextEl = frameElements[safeNext];
 
@@ -1124,7 +1641,7 @@ export class App implements AfterViewInit, OnDestroy {
       id: this.nextChatMessageId,
       sender,
       text,
-      cta
+      cta,
     });
     this.scrollChatToBottom();
   }
@@ -1139,7 +1656,7 @@ export class App implements AfterViewInit, OnDestroy {
       input.includes('tools')
     ) {
       return {
-        text: 'Core stack: Angular, Ionic, TypeScript, PHP, Node.js/Express, and MySQL, plus Power BI and SQL reporting work.'
+        text: 'Core stack: Angular, Ionic, TypeScript, PHP, Node.js/Express, and MySQL, plus Power BI and SQL reporting work.',
       };
     }
 
@@ -1150,7 +1667,7 @@ export class App implements AfterViewInit, OnDestroy {
       input.includes('experience')
     ) {
       return {
-        text: 'Top builds include Paragon S2S MMS enhancements, a Repair Monitoring System from scratch, PSMMS v2 UI build, and a QR-based service platform with web + mobile flows.'
+        text: 'Top builds include Paragon S2S MMS enhancements, a Repair Monitoring System from scratch, PSMMS v2 UI build, and a QR-based service platform with web + mobile flows.',
       };
     }
 
@@ -1164,19 +1681,19 @@ export class App implements AfterViewInit, OnDestroy {
         text: `You can reach Jericho at ${this.profile.email} or ${this.profile.phone}. If you want to move fast, use the handoff button below.`,
         cta: {
           label: 'Email me now',
-          href: `mailto:${this.profile.email}`
-        }
+          href: `mailto:${this.profile.email}`,
+        },
       };
     }
 
     if (input.includes('ai') || input.includes('machine learning') || input.includes('gen ai')) {
       return {
-        text: 'Jericho is currently expanding into AI-powered features and generative AI workflows, alongside full-stack delivery for web and internal systems.'
+        text: 'Jericho is currently expanding into AI-powered features and generative AI workflows, alongside full-stack delivery for web and internal systems.',
       };
     }
 
     return {
-      text: 'Good question. Try asking about stack, projects, AI focus, or contact details and I can answer quickly.'
+      text: 'Good question. Try asking about stack, projects, AI focus, or contact details and I can answer quickly.',
     };
   }
 
@@ -1293,3 +1810,4 @@ export class App implements AfterViewInit, OnDestroy {
     }
   }
 }
+
