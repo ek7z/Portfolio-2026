@@ -41,32 +41,113 @@ type ProjectMediaCrop = {
   gallery?: ProjectMediaCropRule;
 };
 
+type ProjectMediaFrame = 'desktop' | 'mobile' | 'poster';
+type ProjectMediaPresentation = 'wide' | 'tall' | 'poster';
+
 type ProjectMediaItem = {
   src: string;
   label: string;
-  frame: 'desktop' | 'mobile' | 'poster';
+  frame: ProjectMediaFrame;
+  presentation: ProjectMediaPresentation;
+  viewerLabel: string;
   crop?: ProjectMediaCrop;
 };
 
+type ProjectMediaBuildConfig = {
+  folder: string;
+  frame: ProjectMediaFrame;
+  entries: Array<number | string>;
+  labelPrefix: string;
+  presentation?: ProjectMediaPresentation;
+  viewerLabel?: string;
+  cropByIndex?: (index: number) => ProjectMediaCrop | undefined;
+};
+
+const PROJECT_MEDIA_FRAME_ORDER: ProjectMediaFrame[] = ['desktop', 'mobile', 'poster'];
+
+const getDefaultMediaPresentation = (frame: ProjectMediaFrame): ProjectMediaPresentation => {
+  switch (frame) {
+    case 'mobile':
+      return 'tall';
+    case 'poster':
+      return 'poster';
+    default:
+      return 'wide';
+  }
+};
+
+const getDefaultViewerLabel = (frame: ProjectMediaFrame): string => {
+  switch (frame) {
+    case 'mobile':
+      return 'Mobile App';
+    case 'poster':
+      return 'Scene';
+    default:
+      return 'Web App';
+  }
+};
+
+const buildMediaCrop = (overrides: ProjectMediaCrop = {}): ProjectMediaCrop => ({
+  hero: {
+    fit: 'cover',
+    position: 'center top',
+    scale: 1,
+    origin: 'center center',
+    ...(overrides.hero ?? {}),
+  },
+  card: {
+    fit: 'cover',
+    position: 'center top',
+    scale: 1,
+    origin: 'center center',
+    ...(overrides.card ?? {}),
+  },
+  gallery: {
+    fit: 'contain',
+    position: 'center center',
+    scale: 1,
+    origin: 'center center',
+    ...(overrides.gallery ?? {}),
+  },
+});
+
 const buildProjectMedia = (
-  folder: string,
-  frame: ProjectMediaItem['frame'],
-  entries: Array<number | string>,
-  labelPrefix: string,
-  cropByIndex?: (index: number) => ProjectMediaCrop | undefined,
+  config: ProjectMediaBuildConfig,
 ): ProjectMediaItem[] =>
-  entries.map((entry, index) => ({
-    src: `assets/${folder}/${entry}.png`,
-    label: `${labelPrefix} ${String(index + 1).padStart(2, '0')}`,
-    frame,
-    crop: cropByIndex?.(index),
+  config.entries.map((entry, index) => ({
+    src: `assets/${config.folder}/${entry}.png`,
+    label: `${config.labelPrefix} ${String(index + 1).padStart(2, '0')}`,
+    frame: config.frame,
+    presentation: config.presentation ?? getDefaultMediaPresentation(config.frame),
+    viewerLabel: config.viewerLabel ?? getDefaultViewerLabel(config.frame),
+    crop: config.cropByIndex?.(index),
   }));
 
-const buildRepairMediaCrop = (_screenNumber: number): ProjectMediaCrop => ({
-  hero: { fit: 'cover', position: 'center center', scale: 1, origin: 'center center' },
-  card: { fit: 'cover', position: 'center center', scale: 1, origin: 'center center' },
-  gallery: { fit: 'cover', position: 'center center', scale: 1, origin: 'center center' },
-});
+const buildRepairMediaCrop = (_screenNumber: number): ProjectMediaCrop =>
+  buildMediaCrop({
+    hero: { position: 'center center', scale: 1.02, origin: 'center center' },
+    card: { position: 'center center', scale: 1.02, origin: 'center center' },
+  });
+
+const buildUiMediaCrop = (_screenNumber: number): ProjectMediaCrop =>
+  buildMediaCrop({
+    hero: { fit: 'contain', position: 'center center', scale: 1, origin: 'center center' },
+    card: { fit: 'contain', position: 'center center', scale: 1, origin: 'center center' },
+  });
+
+const buildDesktopMediaCrop = (_screenNumber: number): ProjectMediaCrop => buildMediaCrop();
+
+const buildMobileAppMediaCrop = (_screenNumber: number): ProjectMediaCrop =>
+  buildMediaCrop({
+    hero: { fit: 'contain', position: 'center center', origin: 'center center' },
+    card: { fit: 'contain', position: 'center center', origin: 'center center' },
+  });
+
+const buildPosterMediaCrop = (_screenNumber: number): ProjectMediaCrop =>
+  buildMediaCrop({
+    hero: { position: 'center 18%', origin: 'center center' },
+    card: { position: 'center 18%', origin: 'center center' },
+  });
 
 const REPAIR_MEDIA_ENTRIES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
 
@@ -83,6 +164,7 @@ type ProjectItem = {
   result: string;
   tone: string;
   badges: string[];
+  initialMediaIndex?: number;
   media: ProjectMediaItem[];
 };
 
@@ -564,13 +646,15 @@ export class App implements AfterViewInit, OnDestroy {
         'Deployed request-to-dispatch lifecycle with tracking history, report tables, and optimized query performance.',
       tone: 'project-cyan',
       badges: ['HTML', 'CSS', 'JavaScript', 'PHP', 'MySQL'],
-      media: buildProjectMedia(
-        'Repair',
-        'desktop',
-        REPAIR_MEDIA_ENTRIES,
-        'Repair Screen',
-        (index) => buildRepairMediaCrop(index + 1),
-      ),
+      media: buildProjectMedia({
+        folder: 'Repair',
+        frame: 'desktop',
+        entries: REPAIR_MEDIA_ENTRIES,
+        labelPrefix: 'Repair Screen',
+        viewerLabel: 'Operations',
+        presentation: 'wide',
+        cropByIndex: (index) => buildRepairMediaCrop(index + 1),
+      }),
     },
     {
       title: 'PSMMS Version 2 UI Build',
@@ -587,12 +671,16 @@ export class App implements AfterViewInit, OnDestroy {
         'Built reusable screens and navigation patterns, then handed off integration-ready UI before project hold.',
       tone: 'project-pink',
       badges: ['Angular', 'Tailwind'],
-      media: buildProjectMedia(
-        'Paragon V2 UI',
-        'desktop',
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-        'UI Screen',
-      ),
+      initialMediaIndex: 1,
+      media: buildProjectMedia({
+        folder: 'Paragon V2 UI',
+        frame: 'desktop',
+        entries: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        labelPrefix: 'UI Screen',
+        viewerLabel: 'Product UI',
+        presentation: 'wide',
+        cropByIndex: (index) => buildUiMediaCrop(index + 1),
+      }),
     },
     {
       title: 'QR Code-Based Service System',
@@ -627,18 +715,24 @@ export class App implements AfterViewInit, OnDestroy {
       tone: 'project-cyan',
       badges: ['Ionic', 'Angular', 'Node.js', 'Express', 'MySQL'],
       media: [
-        ...buildProjectMedia(
-          'DSpeedWash',
-          'desktop',
-          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-          'Web Admin',
-        ),
-        ...buildProjectMedia(
-          'DSpeedWash/app',
-          'mobile',
-          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-          'Mobile App',
-        ),
+        ...buildProjectMedia({
+          folder: 'DSpeedWash',
+          frame: 'desktop',
+          entries: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+          labelPrefix: 'Web Admin',
+          viewerLabel: 'Admin Portal',
+          presentation: 'wide',
+          cropByIndex: (index) => buildDesktopMediaCrop(index + 1),
+        }),
+        ...buildProjectMedia({
+          folder: 'DSpeedWash/app',
+          frame: 'mobile',
+          entries: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+          labelPrefix: 'Mobile App',
+          viewerLabel: 'Customer App',
+          presentation: 'tall',
+          cropByIndex: (index) => buildMobileAppMediaCrop(index + 1),
+        }),
       ],
     },
     {
@@ -656,12 +750,15 @@ export class App implements AfterViewInit, OnDestroy {
         'Built and presented the Bayani TTRPG concept with a stylized start screen and world-driven visual direction.',
       tone: 'project-pink',
       badges: ['GameDev', 'TTRPG', 'Story Systems'],
-      media: buildProjectMedia(
-        'Bayani TTRPG',
-        'poster',
-        [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15],
-        'Bayani Scene',
-      ),
+      media: buildProjectMedia({
+        folder: 'Bayani TTRPG',
+        frame: 'poster',
+        entries: [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15],
+        labelPrefix: 'Bayani Scene',
+        viewerLabel: 'Gameplay',
+        presentation: 'poster',
+        cropByIndex: (index) => buildPosterMediaCrop(index + 1),
+      }),
     },
     {
       title: 'Apartease',
@@ -844,7 +941,7 @@ export class App implements AfterViewInit, OnDestroy {
       return null;
     }
 
-    const nextIndex = this.activeProjectMediaIndex[project.title] ?? 0;
+    const nextIndex = this.activeProjectMediaIndex[project.title] ?? project.initialMediaIndex ?? 0;
     return project.media[nextIndex] ?? project.media[0] ?? null;
   }
 
@@ -861,7 +958,7 @@ export class App implements AfterViewInit, OnDestroy {
       return 0;
     }
 
-    const nextIndex = this.activeProjectMediaIndex[project.title] ?? 0;
+    const nextIndex = this.activeProjectMediaIndex[project.title] ?? project.initialMediaIndex ?? 0;
     return Math.min(Math.max(nextIndex, 0), project.media.length - 1);
   }
 
@@ -997,10 +1094,6 @@ export class App implements AfterViewInit, OnDestroy {
     return rule.origin ?? 'center center';
   }
 
-  getMediaSlotLabel(index: number): string {
-    return String(index + 1).padStart(2, '0');
-  }
-
   getProjectMediaByFrame(
     project: ProjectItem,
     frame: ProjectMediaItem['frame'],
@@ -1017,34 +1110,74 @@ export class App implements AfterViewInit, OnDestroy {
     return typeof window !== 'undefined' ? window.innerWidth <= 620 : false;
   }
 
-  isRepairGalleryProject(project: ProjectItem | null): boolean {
-    return project?.title === 'Repair Management Monitoring System';
+  private getProjectGalleryFrames(project: ProjectItem | null): ProjectMediaFrame[] {
+    if (!project) {
+      return [];
+    }
+
+    const frames = new Set(project.media.map((mediaItem) => mediaItem.frame));
+    return PROJECT_MEDIA_FRAME_ORDER.filter((frame) => frames.has(frame));
   }
 
-  isWideGalleryProject(project: ProjectItem | null): boolean {
+  private resolveProjectGalleryFrameFilter(
+    project: ProjectItem,
+    index: number,
+    frameFilter: ProjectMediaFrame | null,
+  ): ProjectMediaFrame | null {
+    if (frameFilter) {
+      return frameFilter;
+    }
+
+    const frames = this.getProjectGalleryFrames(project);
+    if (frames.length <= 1) {
+      return null;
+    }
+
+    const fallbackMedia = project.media[Math.min(Math.max(index, 0), project.media.length - 1)] ?? null;
+    return fallbackMedia?.frame ?? frames[0] ?? null;
+  }
+
+  get galleryFrameOptions(): ProjectMediaFrame[] {
+    return this.getProjectGalleryFrames(this.projectGalleryProject);
+  }
+
+  get hasGalleryFrameOptions(): boolean {
+    return this.galleryFrameOptions.length > 1;
+  }
+
+  getActiveGalleryFrame(): ProjectMediaFrame | null {
+    return this.projectGalleryFrameFilter ?? this.getActiveGalleryMedia()?.frame ?? null;
+  }
+
+  isGalleryFrameActive(frame: ProjectMediaFrame): boolean {
+    return this.getActiveGalleryFrame() === frame;
+  }
+
+  getGalleryFrameLabel(frame: ProjectMediaFrame): string {
     return (
-      project?.title === 'Repair Management Monitoring System' ||
-      project?.title === 'PSMMS Version 2 UI Build'
+      this.projectGalleryProject?.media.find((mediaItem) => mediaItem.frame === frame)?.viewerLabel ??
+      getDefaultViewerLabel(frame)
     );
   }
 
-  isPosterGalleryProject(project: ProjectItem | null): boolean {
-    return project?.title === 'Bayani TTRPG';
-  }
+  setGalleryFrameFilter(frame: ProjectMediaFrame): void {
+    if (!this.projectGalleryProject) {
+      return;
+    }
 
-  isDspeedGalleryProject(project: ProjectItem | null): boolean {
-    return project?.title === "D'Speedwash App";
-  }
+    const availableFrames = this.getProjectGalleryFrames(this.projectGalleryProject);
+    if (!availableFrames.includes(frame)) {
+      return;
+    }
 
-  isTallGalleryProject(project: ProjectItem | null): boolean {
-    return (
-      project?.title === "D'Speedwash App" &&
-      this.getActiveGalleryMedia()?.frame === 'mobile'
-    );
+    this.projectGalleryFrameFilter = availableFrames.length > 1 ? frame : null;
+    this.projectGalleryActiveIndex = 0;
+    this.isGalleryZoomed = false;
   }
 
   shouldShowGalleryRail(): boolean {
-    if (!this.projectGalleryProject) {
+    const media = this.galleryProjectMedia;
+    if (media.length <= 1) {
       return false;
     }
 
@@ -1052,7 +1185,8 @@ export class App implements AfterViewInit, OnDestroy {
       return true;
     }
 
-    return this.isDspeedGalleryProject(this.projectGalleryProject);
+    const distinctFrames = new Set(media.map((mediaItem) => mediaItem.frame));
+    return distinctFrames.size === 1 && media.length <= 12;
   }
 
   shouldShowGalleryDots(): boolean {
@@ -1141,7 +1275,7 @@ export class App implements AfterViewInit, OnDestroy {
     }
 
     this.projectGalleryProject = project;
-    this.projectGalleryFrameFilter = frameFilter;
+    this.projectGalleryFrameFilter = this.resolveProjectGalleryFrameFilter(project, index, frameFilter);
 
     const media = this.galleryProjectMedia;
     if (!media.length) {

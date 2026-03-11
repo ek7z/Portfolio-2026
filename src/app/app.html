@@ -526,7 +526,7 @@
     </div>
     <div class="projects-desktop-shell">
     @if (featuredProject; as project) {
-      <article class="project-hero-card neo-card reveal {{ project.tone }}" [class.is-repair-layout]="project.title === 'Repair Management Monitoring System'">
+      <article class="project-hero-card neo-card reveal {{ project.tone }}">
         <div class="project-hero-copy">
           <div class="project-hero-head">
             <div class="project-title-wrap">
@@ -601,7 +601,12 @@
               [attr.aria-label]="'Open gallery for ' + project.title"
               (click)="openProjectGallery(project, getProjectMediaIndex(project))"
             >
-              <div class="project-screen-frame" [class.is-mobile-shot]="activeMedia.frame === 'mobile'" [class.is-poster-shot]="activeMedia.frame === 'poster'">
+              <div
+                class="project-screen-frame"
+                [class.is-mobile-shot]="activeMedia.frame === 'mobile'"
+                [class.is-poster-shot]="activeMedia.frame === 'poster'"
+                [attr.data-presentation]="activeMedia.presentation"
+              >
                 <div class="project-screen-topbar" aria-hidden="true">
                   <span></span>
                   <span></span>
@@ -611,11 +616,10 @@
                   class="project-screen-canvas project-hero-canvas"
                   [class.is-mobile-shot]="activeMedia.frame === 'mobile'"
                   [class.is-poster-shot]="activeMedia.frame === 'poster'"
-                  [class.is-repair-canvas]="project.title === 'Repair Management Monitoring System'"
+                  [attr.data-presentation]="activeMedia.presentation"
                 >
                   <img
                     class="project-screen-image"
-                    [class.is-repair-focus]="project.title === 'Repair Management Monitoring System'"
                     [style.objectFit]="getProjectMediaFit(activeMedia, 'hero')"
                     [style.objectPosition]="getProjectMediaPosition(activeMedia, 'hero')"
                     [style.transform]="getProjectMediaTransform(activeMedia, 'hero')"
@@ -630,14 +634,13 @@
 
             <div class="project-hero-screenbar">
               <div class="featured-project-media-meta">
-                <span class="project-showcase-kicker">Featured Preview</span>
+                <span class="project-showcase-kicker">Visual Preview</span>
               </div>
               <div class="featured-project-media-actions">
                 @if (project.media.length > 1) {
                   <button class="project-nav-btn" type="button" aria-label="Previous screenshot" (click)="prevProjectMedia(project)">
                     &#8592;
                   </button>
-                  <span class="project-showcase-count">{{ getProjectMediaIndex(project) + 1 }}/{{ project.media.length }}</span>
                   <button class="project-nav-btn" type="button" aria-label="Next screenshot" (click)="nextProjectMedia(project)">
                     &#8594;
                   </button>
@@ -761,16 +764,14 @@
             @if (getActiveProjectMedia(project); as activeMedia) {
               <button
                 class="project-showcase-preview"
-                [class.is-poster-preview]="activeMedia.frame === 'poster'"
-                [class.is-ui-preview]="project.title === 'PSMMS Version 2 UI Build'"
+                [attr.data-presentation]="activeMedia.presentation"
                 type="button"
                 [attr.aria-label]="'Open gallery for ' + project.title"
                 (click)="openProjectGallery(project)"
               >
                 <img
                   class="project-showcase-image"
-                  [class.is-poster-preview]="activeMedia.frame === 'poster'"
-                  [class.is-ui-tight]="project.title === 'PSMMS Version 2 UI Build'"
+                  [attr.data-presentation]="activeMedia.presentation"
                   [style.objectFit]="getProjectMediaFit(activeMedia, 'card')"
                   [style.objectPosition]="getProjectMediaPosition(activeMedia, 'card')"
                   [style.transform]="getProjectMediaTransform(activeMedia, 'card')"
@@ -779,7 +780,6 @@
                   [alt]="project.title + ' screenshot: ' + activeMedia.label"
                   loading="lazy"
                 />
-                <span class="project-mini-count">{{ project.media.length }} screens</span>
               </button>
             }
 
@@ -902,15 +902,18 @@
                 [attr.aria-label]="'Open gallery for ' + project.title"
                 (click)="openProjectGallery(project, getProjectMediaIndex(project))"
               >
-                <div class="project-screen-frame">
+                <div class="project-screen-frame" [attr.data-presentation]="activeMedia.presentation">
                   <div class="project-screen-topbar" aria-hidden="true">
                     <span></span>
                     <span></span>
                     <span></span>
                   </div>
-                  <div class="project-screen-canvas project-mobile-preview-canvas is-repair-canvas">
+                  <div
+                    class="project-screen-canvas project-mobile-preview-canvas"
+                    [attr.data-presentation]="activeMedia.presentation"
+                  >
                     <img
-                      class="project-screen-image is-repair-focus"
+                      class="project-screen-image"
                       [style.objectFit]="getProjectMediaFit(activeMedia, 'hero')"
                       [style.objectPosition]="getProjectMediaPosition(activeMedia, 'hero')"
                       [style.transform]="getProjectMediaTransform(activeMedia, 'hero')"
@@ -924,11 +927,8 @@
               </button>
 
               <div class="project-mobile-preview-controls is-compact">
-                <span class="project-showcase-kicker">Featured Preview</span>
+                <span class="project-showcase-kicker">Visual Preview</span>
                 <div class="project-mobile-preview-actions">
-                  @if (project.media.length > 1) {
-                    <span class="project-showcase-count">{{ getProjectMediaIndex(project) + 1 }}/{{ project.media.length }}</span>
-                  }
                   <button class="featured-gallery-btn" type="button" (click)="openProjectGallery(project, getProjectMediaIndex(project))">
                     Open Gallery
                   </button>
@@ -1122,11 +1122,10 @@
                     [style.objectPosition]="getProjectMediaPosition(activeMedia, 'card')"
                     [style.transform]="getProjectMediaTransform(activeMedia, 'card')"
                     [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'card')"
-                    [src]="activeMedia.src"
-                    [alt]="project.title + ' screenshot: ' + activeMedia.label"
-                    loading="lazy"
-                  />
-                  <span class="project-mini-count">{{ project.media.length }} screens</span>
+                  [src]="activeMedia.src"
+                  [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                  loading="lazy"
+                />
                 </button>
               }
 
@@ -1261,11 +1260,8 @@
   <div class="project-gallery-overlay" role="presentation" (click)="closeProjectGallery()">
     <section
       class="project-gallery-modal neo-card"
-      [class.is-mobile-sheet]="isMobileViewport"
-      [class.is-repair-modal]="galleryProject.title === 'Repair Management Monitoring System'"
-      [class.is-wide-modal]="isWideGalleryProject(galleryProject)"
-      [class.is-tall-modal]="isTallGalleryProject(galleryProject)"
-      [class.is-poster-modal]="isPosterGalleryProject(galleryProject)"
+      [attr.data-presentation]="getActiveGalleryMedia()?.presentation ?? 'wide'"
+      [attr.data-frame]="getActiveGalleryMedia()?.frame ?? null"
       role="dialog"
       aria-modal="true"
       [attr.aria-label]="galleryProject.title + ' gallery'"
@@ -1273,9 +1269,8 @@
     >
       <div class="project-gallery-sheet-handle" aria-hidden="true"></div>
 
-      @if (isMobileViewport) {
-      <header class="project-gallery-head is-mobile-gallery-head">
-        <div class="project-gallery-mobile-topline">
+      <header class="project-gallery-head">
+        <div class="project-gallery-head-main">
           <div class="project-gallery-meta">
             <h3>{{ galleryProject.title }}</h3>
           </div>
@@ -1290,53 +1285,46 @@
           </button>
         </div>
 
-        @if (galleryProjectMedia.length > 1) {
-        <div class="project-gallery-mobile-controls is-count-only">
-          <span class="project-showcase-count">{{ getGalleryMediaIndex() + 1 }}/{{ galleryProjectMedia.length }}</span>
-        </div>
-        }
-      </header>
-      } @else {
-      <header class="project-gallery-head">
-        <div class="project-gallery-meta">
-          <p>Project Gallery</p>
-          <h3>{{ galleryProject.title }}</h3>
-        </div>
-      </header>
-      }
+        <div class="project-gallery-toolbar">
+          @if (hasGalleryFrameOptions) {
+          <div class="project-gallery-frame-switcher" aria-label="Media viewer types">
+            @for (frame of galleryFrameOptions; track frame) {
+              <button
+                class="project-gallery-frame-tab"
+                type="button"
+                [class.is-active]="isGalleryFrameActive(frame)"
+                [attr.aria-pressed]="isGalleryFrameActive(frame)"
+                (click)="setGalleryFrameFilter(frame)"
+              >
+                {{ getGalleryFrameLabel(frame) }}
+              </button>
+            }
+          </div>
+          }
 
-      @if (!isMobileViewport) {
-      <div class="project-gallery-toolbar" [class.is-mobile-gallery-toolbar]="isMobileViewport">
-        <div class="project-gallery-actions">
-          @if (galleryProjectMedia.length > 1) {
+          @if (!isMobileViewport && galleryProjectMedia.length > 1) {
+          <div class="project-gallery-actions">
             <button class="project-nav-btn" type="button" aria-label="Previous screenshot" (click)="prevOpenProjectGalleryMedia()">
               &#8592;
             </button>
-            <span class="project-showcase-count">{{ getGalleryMediaIndex() + 1 }}/{{ galleryProjectMedia.length }}</span>
             <button class="project-nav-btn" type="button" aria-label="Next screenshot" (click)="nextOpenProjectGalleryMedia()">
               &#8594;
             </button>
+          </div>
           }
         </div>
-        <button class="neo-btn btn-pink" type="button" (click)="closeProjectGallery()">Close</button>
-      </div>
-      }
+      </header>
 
       <div
         class="project-gallery-body"
-        [class.is-mobile-body]="getActiveGalleryMedia()?.frame === 'mobile'"
-        [class.is-repair-body]="galleryProject.title === 'Repair Management Monitoring System'"
+        [attr.data-frame]="getActiveGalleryMedia()?.frame ?? null"
         [class.is-rail-hidden]="!shouldShowGalleryRail()"
       >
         @if (getActiveGalleryMedia(); as galleryMedia) {
           <div
             class="project-gallery-stage"
-            [class.is-mobile-shot]="galleryMedia.frame === 'mobile'"
-            [class.is-poster-shot]="galleryMedia.frame === 'poster'"
-            [class.is-repair-stage]="galleryProject.title === 'Repair Management Monitoring System'"
-            [class.is-wide-stage]="isWideGalleryProject(galleryProject)"
-            [class.is-tall-stage]="isTallGalleryProject(galleryProject)"
-            [class.is-poster-stage]="isPosterGalleryProject(galleryProject)"
+            [attr.data-presentation]="galleryMedia.presentation"
+            [attr.data-frame]="galleryMedia.frame"
             [class.is-zoomed]="!isMobileViewport && isGalleryZoomed"
             [attr.role]="isMobileViewport ? null : 'button'"
             [attr.tabindex]="isMobileViewport ? null : 0"
@@ -1347,7 +1335,6 @@
           >
             <img
               class="project-gallery-image"
-              [class.is-repair-focus]="galleryProject.title === 'Repair Management Monitoring System'"
               [style.objectFit]="getProjectMediaFit(galleryMedia, 'gallery')"
               [style.objectPosition]="getProjectMediaPosition(galleryMedia, 'gallery')"
               [style.transform]="getGalleryImageTransform(galleryMedia)"
@@ -1380,13 +1367,13 @@
             <button
               class="project-gallery-thumb"
               type="button"
-              [class.is-mobile-thumb]="thumb.media.frame === 'mobile'"
+              [attr.data-presentation]="thumb.media.presentation"
+              [attr.data-frame]="thumb.media.frame"
               [class.is-active]="getGalleryMediaIndex() === thumb.index"
               [attr.aria-pressed]="getGalleryMediaIndex() === thumb.index"
               (click)="setActiveGalleryMedia(thumb.index)"
             >
               <img [src]="thumb.media.src" [alt]="galleryProject.title + ' gallery thumbnail: ' + thumb.media.label" loading="lazy" />
-              <span>{{ getMediaSlotLabel(thumb.index) }}</span>
             </button>
           }
         </div>
