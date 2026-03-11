@@ -195,6 +195,8 @@ export class App implements AfterViewInit, OnDestroy {
   private catFrameTimer: number | null = null;
   private chatReplyTimer: number | null = null;
   private chatAutoOpenTimer: number | null = null;
+  private galleryTouchStartX: number | null = null;
+  private galleryTouchStartY: number | null = null;
   private nextChatMessageId = 1;
   private catDomFrameIndex = 0;
   private activeProjectMediaIndex: Record<string, number> = {};
@@ -315,7 +317,11 @@ export class App implements AfterViewInit, OnDestroy {
       return false;
     }
 
-    return window.innerWidth <= 620 && this.activeSection === 'projects' && !this.isChatOpen;
+    return (
+      window.innerWidth <= 620 &&
+      !this.isChatOpen &&
+      (this.activeSection === 'projects' || this.isSectionVisible('projects'))
+    );
   }
 
   readonly aboutCopy = [
@@ -914,8 +920,8 @@ export class App implements AfterViewInit, OnDestroy {
     const baseBadges = project.badges.slice(0, 3);
     const remainingCount = Math.max(project.badges.length - baseBadges.length, 0);
     return remainingCount > 0
-      ? `${baseBadges.join(' � ')} +${remainingCount}`
-      : baseBadges.join(' � ');
+      ? `${baseBadges.join(' / ')} +${remainingCount}`
+      : baseBadges.join(' / ');
   }
 
   getProjectMediaStyle(
@@ -1007,6 +1013,97 @@ export class App implements AfterViewInit, OnDestroy {
     return mediaIndex >= 0 ? mediaIndex : 0;
   }
 
+  get isMobileViewport(): boolean {
+    return typeof window !== 'undefined' ? window.innerWidth <= 620 : false;
+  }
+
+  isRepairGalleryProject(project: ProjectItem | null): boolean {
+    return project?.title === 'Repair Management Monitoring System';
+  }
+
+  isWideGalleryProject(project: ProjectItem | null): boolean {
+    return (
+      project?.title === 'Repair Management Monitoring System' ||
+      project?.title === 'PSMMS Version 2 UI Build'
+    );
+  }
+
+  isPosterGalleryProject(project: ProjectItem | null): boolean {
+    return project?.title === 'Bayani TTRPG';
+  }
+
+  isDspeedGalleryProject(project: ProjectItem | null): boolean {
+    return project?.title === "D'Speedwash App";
+  }
+
+  isTallGalleryProject(project: ProjectItem | null): boolean {
+    return (
+      project?.title === "D'Speedwash App" &&
+      this.getActiveGalleryMedia()?.frame === 'mobile'
+    );
+  }
+
+  shouldShowGalleryRail(): boolean {
+    if (!this.projectGalleryProject) {
+      return false;
+    }
+
+    if (!this.isMobileViewport) {
+      return true;
+    }
+
+    return this.isDspeedGalleryProject(this.projectGalleryProject);
+  }
+
+  shouldShowGalleryDots(): boolean {
+    return this.isMobileViewport && !this.shouldShowGalleryRail() && this.galleryProjectMedia.length > 1;
+  }
+
+  get visibleGalleryThumbs(): Array<{ media: ProjectMediaItem; index: number }> {
+    const media = this.galleryProjectMedia;
+    if (!media.length) {
+      return [];
+    }
+
+    if (!this.isMobileViewport || media.length <= 3 || !this.shouldShowGalleryRail()) {
+      return media.map((mediaItem, index) => ({ media: mediaItem, index }));
+    }
+
+    const activeIndex = this.getGalleryMediaIndex();
+    let start = Math.max(activeIndex - 1, 0);
+    let end = Math.min(start + 3, media.length);
+
+    if (end - start < 3) {
+      start = Math.max(end - 3, 0);
+    }
+
+    return media.slice(start, end).map((mediaItem, offset) => ({
+      media: mediaItem,
+      index: start + offset,
+    }));
+  }
+
+  get visibleGalleryDots(): number[] {
+    const media = this.galleryProjectMedia;
+    if (!media.length) {
+      return [];
+    }
+
+    if (!this.isMobileViewport || media.length <= 7) {
+      return media.map((_, index) => index);
+    }
+
+    const activeIndex = this.getGalleryMediaIndex();
+    let start = Math.max(activeIndex - 3, 0);
+    let end = Math.min(start + 7, media.length);
+
+    if (end - start < 7) {
+      start = Math.max(end - 7, 0);
+    }
+
+    return Array.from({ length: end - start }, (_, offset) => start + offset);
+  }
+
   get galleryProjectMedia(): ProjectMediaItem[] {
     if (!this.projectGalleryProject) {
       return [];
@@ -1079,6 +1176,7 @@ export class App implements AfterViewInit, OnDestroy {
     this.setActiveProjectMedia(project, index);
     this.isProjectGalleryOpen = true;
     this.isGalleryZoomed = false;
+    this.syncBodyScrollLock();
   }
 
   closeProjectGallery(): void {
@@ -1087,6 +1185,9 @@ export class App implements AfterViewInit, OnDestroy {
     this.projectGalleryFrameFilter = null;
     this.projectGalleryActiveIndex = 0;
     this.isGalleryZoomed = false;
+    this.galleryTouchStartX = null;
+    this.galleryTouchStartY = null;
+    this.syncBodyScrollLock();
   }
 
   nextOpenProjectGalleryMedia(): void {
@@ -1111,7 +1212,69 @@ export class App implements AfterViewInit, OnDestroy {
   }
 
   toggleGalleryZoom(): void {
+    if (this.isMobileViewport) {
+      return;
+    }
+
     this.isGalleryZoomed = !this.isGalleryZoomed;
+  }
+
+  onGalleryTouchStart(event: TouchEvent): void {
+    if (!this.isMobileViewport || this.galleryProjectMedia.length <= 1) {
+      return;
+    }
+
+    const touch = event.touches[0];
+    if (!touch) {
+      return;
+    }
+
+    this.galleryTouchStartX = touch.clientX;
+    this.galleryTouchStartY = touch.clientY;
+  }
+
+  onGalleryTouchEnd(event: TouchEvent): void {
+    if (!this.isMobileViewport || this.galleryProjectMedia.length <= 1) {
+      return;
+    }
+
+    if (this.galleryTouchStartX === null) {
+      return;
+    }
+
+    const touch = event.changedTouches[0];
+    const startX = this.galleryTouchStartX;
+    const startY = this.galleryTouchStartY ?? 0;
+
+    this.galleryTouchStartX = null;
+    this.galleryTouchStartY = null;
+
+    if (!touch) {
+      return;
+    }
+
+    const deltaX = touch.clientX - startX;
+    const deltaY = touch.clientY - startY;
+
+    if (Math.abs(deltaX) < 42 || Math.abs(deltaX) < Math.abs(deltaY)) {
+      return;
+    }
+
+    if (deltaX < 0) {
+      this.nextOpenProjectGalleryMedia();
+      return;
+    }
+
+    this.prevOpenProjectGalleryMedia();
+  }
+
+  private syncBodyScrollLock(): void {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    document.body.style.overflow =
+      this.isResumePreviewOpen || this.isProjectGalleryOpen ? 'hidden' : '';
   }
 
   onNavSelect(sectionId: string): void {
@@ -1273,16 +1436,12 @@ export class App implements AfterViewInit, OnDestroy {
 
   openResumePreview(): void {
     this.isResumePreviewOpen = true;
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = 'hidden';
-    }
+    this.syncBodyScrollLock();
   }
 
   closeResumePreview(): void {
     this.isResumePreviewOpen = false;
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = '';
-    }
+    this.syncBodyScrollLock();
   }
 
   ngAfterViewInit(): void {
@@ -1331,8 +1490,14 @@ export class App implements AfterViewInit, OnDestroy {
 
   @HostListener('document:keydown.escape')
   onEscapePressed(): void {
+    if (this.isProjectGalleryOpen) {
+      this.closeProjectGallery();
+      return;
+    }
+
     if (this.isResumePreviewOpen) {
       this.closeResumePreview();
+      return;
     }
 
     if (this.isMobileMenuOpen) {
@@ -1364,6 +1529,20 @@ export class App implements AfterViewInit, OnDestroy {
     this.trackedSections = ids
       .map((id) => document.getElementById(id))
       .filter((section): section is HTMLElement => section !== null);
+  }
+
+  private isSectionVisible(sectionId: string): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    const section = document.getElementById(sectionId);
+    if (!section) {
+      return false;
+    }
+
+    const rect = section.getBoundingClientRect();
+    return rect.top < window.innerHeight * 0.75 && rect.bottom > 96;
   }
 
   private updateActiveSectionFromViewport(): void {
@@ -1818,3 +1997,4 @@ export class App implements AfterViewInit, OnDestroy {
     }
   }
 }
+

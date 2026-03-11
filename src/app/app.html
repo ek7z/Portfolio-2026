@@ -927,13 +927,7 @@
                 <span class="project-showcase-kicker">Featured Preview</span>
                 <div class="project-mobile-preview-actions">
                   @if (project.media.length > 1) {
-                    <button class="project-nav-btn" type="button" aria-label="Previous screenshot" (click)="prevProjectMedia(project)">
-                      &#8592;
-                    </button>
                     <span class="project-showcase-count">{{ getProjectMediaIndex(project) + 1 }}/{{ project.media.length }}</span>
-                    <button class="project-nav-btn" type="button" aria-label="Next screenshot" (click)="nextProjectMedia(project)">
-                      &#8594;
-                    </button>
                   }
                   <button class="featured-gallery-btn" type="button" (click)="openProjectGallery(project, getProjectMediaIndex(project))">
                     Open Gallery
@@ -943,7 +937,14 @@
             </div>
           }
 
-          <p class="project-mobile-lead">{{ project.description }}</p>
+          <div class="project-mobile-summary-card">
+            <p class="project-mobile-lead">{{ project.description }}</p>
+            <div class="project-mobile-chipline">
+              @for (metric of project.impactMetrics.slice(0, 2); track metric) {
+                <span class="project-impact-chip">{{ metric }}</span>
+              }
+            </div>
+          </div>
 
           <div class="project-mobile-action-row">
             @if (project.proofLinks.length > 0) {
@@ -966,12 +967,6 @@
             <details class="project-mobile-details">
               <summary>View Case</summary>
               <div class="project-mobile-details-body">
-                <div class="featured-project-highlights project-mobile-chips">
-                  @for (metric of project.impactMetrics.slice(0, 2); track metric) {
-                    <span class="project-impact-chip">{{ metric }}</span>
-                  }
-                </div>
-
                 <div class="project-mobile-result">
                   <span>Outcome</span>
                   <p>{{ project.result }}</p>
@@ -988,7 +983,7 @@
                   </article>
                 </div>
 
-                <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
+                <span class="project-stack-summary project-stack-summary-muted">{{ getProjectStackSummary(project) }}</span>
               </div>
             </details>
           </div>
@@ -1043,6 +1038,15 @@
             </button>
           }
 
+          <div class="project-mobile-summary-card">
+            <p class="project-mobile-lead">{{ project.description }}</p>
+            <div class="project-mobile-chipline">
+              @for (metric of project.impactMetrics.slice(0, 2); track metric) {
+                <span class="project-impact-chip">{{ metric }}</span>
+              }
+            </div>
+          </div>
+
           <div class="project-mobile-action-row">
             <button
               class="featured-gallery-btn is-secondary"
@@ -1054,18 +1058,12 @@
             <details class="project-mobile-details">
               <summary>Project Result</summary>
               <div class="project-mobile-details-body">
-                <div class="featured-project-highlights project-mobile-chips">
-                  @for (metric of project.impactMetrics.slice(0, 2); track metric) {
-                    <span class="project-impact-chip">{{ metric }}</span>
-                  }
-                </div>
-
                 <div class="project-mobile-result">
                   <span>Result</span>
                   <p>{{ project.result }}</p>
                 </div>
 
-                <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
+                <span class="project-stack-summary project-stack-summary-muted">{{ getProjectStackSummary(project) }}</span>
 
                 <div class="project-proof-row">
                   @if (project.proofLinks.length > 0) {
@@ -1132,10 +1130,11 @@
                 </button>
               }
 
-              <p class="project-mobile-summary">{{ project.result }}</p>
+              <div class="project-mobile-visual-copy">
+                <p class="project-mobile-summary">{{ project.result }}</p>
+              </div>
 
               <div class="project-mobile-footer">
-                <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
                 <div class="project-proof-row">
                   @if (project.proofLinks.length > 0) {
                     @for (link of project.proofLinks; track link.url) {
@@ -1188,7 +1187,6 @@
               </div>
 
               <div class="project-mobile-footer">
-                <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
                 <div class="project-proof-row">
                   @if (project.proofLinks.length > 0) {
                     @for (link of project.proofLinks; track link.url) {
@@ -1263,17 +1261,52 @@
   <div class="project-gallery-overlay" role="presentation" (click)="closeProjectGallery()">
     <section
       class="project-gallery-modal neo-card"
+      [class.is-mobile-sheet]="isMobileViewport"
       [class.is-repair-modal]="galleryProject.title === 'Repair Management Monitoring System'"
+      [class.is-wide-modal]="isWideGalleryProject(galleryProject)"
+      [class.is-tall-modal]="isTallGalleryProject(galleryProject)"
+      [class.is-poster-modal]="isPosterGalleryProject(galleryProject)"
       role="dialog"
       aria-modal="true"
       [attr.aria-label]="galleryProject.title + ' gallery'"
       (click)="$event.stopPropagation()"
     >
+      <div class="project-gallery-sheet-handle" aria-hidden="true"></div>
+
+      @if (isMobileViewport) {
+      <header class="project-gallery-head is-mobile-gallery-head">
+        <div class="project-gallery-mobile-topline">
+          <div class="project-gallery-meta">
+            <h3>{{ galleryProject.title }}</h3>
+          </div>
+
+          <button
+            class="neo-btn btn-pink project-gallery-close-btn project-gallery-close-icon"
+            type="button"
+            aria-label="Close gallery"
+            (click)="closeProjectGallery()"
+          >
+            &#10005;
+          </button>
+        </div>
+
+        @if (galleryProjectMedia.length > 1) {
+        <div class="project-gallery-mobile-controls is-count-only">
+          <span class="project-showcase-count">{{ getGalleryMediaIndex() + 1 }}/{{ galleryProjectMedia.length }}</span>
+        </div>
+        }
+      </header>
+      } @else {
       <header class="project-gallery-head">
         <div class="project-gallery-meta">
           <p>Project Gallery</p>
           <h3>{{ galleryProject.title }}</h3>
         </div>
+      </header>
+      }
+
+      @if (!isMobileViewport) {
+      <div class="project-gallery-toolbar" [class.is-mobile-gallery-toolbar]="isMobileViewport">
         <div class="project-gallery-actions">
           @if (galleryProjectMedia.length > 1) {
             <button class="project-nav-btn" type="button" aria-label="Previous screenshot" (click)="prevOpenProjectGalleryMedia()">
@@ -1284,49 +1317,79 @@
               &#8594;
             </button>
           }
-          <button class="neo-btn btn-pink" type="button" (click)="closeProjectGallery()">Close</button>
         </div>
-      </header>
-
-      @if (getActiveGalleryMedia(); as galleryMedia) {
-        <div
-          class="project-gallery-stage"
-          [class.is-mobile-shot]="galleryMedia.frame === 'mobile'"
-          [class.is-poster-shot]="galleryMedia.frame === 'poster'"
-          [class.is-repair-stage]="galleryProject.title === 'Repair Management Monitoring System'"
-          [class.is-zoomed]="isGalleryZoomed"
-          [attr.role]="'button'"
-          [attr.tabindex]="0"
-          (click)="toggleGalleryZoom()"
-          (keydown.enter)="toggleGalleryZoom()"
-        >
-          <img
-            class="project-gallery-image"
-            [class.is-repair-focus]="galleryProject.title === 'Repair Management Monitoring System'"
-            [style.objectFit]="getProjectMediaFit(galleryMedia, 'gallery')"
-            [style.objectPosition]="getProjectMediaPosition(galleryMedia, 'gallery')"
-            [style.transform]="getGalleryImageTransform(galleryMedia)"
-            [style.transformOrigin]="getProjectMediaTransformOrigin(galleryMedia, 'gallery')"
-            [src]="galleryMedia.src"
-            [alt]="galleryProject.title + ' gallery image: ' + galleryMedia.label"
-            loading="lazy"
-          />
-        </div>
+        <button class="neo-btn btn-pink" type="button" (click)="closeProjectGallery()">Close</button>
+      </div>
       }
 
-      <div class="project-gallery-rail">
-        @for (mediaItem of galleryProjectMedia; track mediaItem.src; let mediaIndex = $index) {
-          <button
-            class="project-gallery-thumb"
-            type="button"
-            [class.is-mobile-thumb]="mediaItem.frame === 'mobile'"
-            [class.is-active]="getGalleryMediaIndex() === mediaIndex"
-            [attr.aria-pressed]="getGalleryMediaIndex() === mediaIndex"
-            (click)="setActiveGalleryMedia(mediaIndex)"
+      <div
+        class="project-gallery-body"
+        [class.is-mobile-body]="getActiveGalleryMedia()?.frame === 'mobile'"
+        [class.is-repair-body]="galleryProject.title === 'Repair Management Monitoring System'"
+        [class.is-rail-hidden]="!shouldShowGalleryRail()"
+      >
+        @if (getActiveGalleryMedia(); as galleryMedia) {
+          <div
+            class="project-gallery-stage"
+            [class.is-mobile-shot]="galleryMedia.frame === 'mobile'"
+            [class.is-poster-shot]="galleryMedia.frame === 'poster'"
+            [class.is-repair-stage]="galleryProject.title === 'Repair Management Monitoring System'"
+            [class.is-wide-stage]="isWideGalleryProject(galleryProject)"
+            [class.is-tall-stage]="isTallGalleryProject(galleryProject)"
+            [class.is-poster-stage]="isPosterGalleryProject(galleryProject)"
+            [class.is-zoomed]="!isMobileViewport && isGalleryZoomed"
+            [attr.role]="isMobileViewport ? null : 'button'"
+            [attr.tabindex]="isMobileViewport ? null : 0"
+            (click)="toggleGalleryZoom()"
+            (keydown.enter)="toggleGalleryZoom()"
+            (touchstart)="onGalleryTouchStart($event)"
+            (touchend)="onGalleryTouchEnd($event)"
           >
-            <img [src]="mediaItem.src" [alt]="galleryProject.title + ' gallery thumbnail: ' + mediaItem.label" loading="lazy" />
-            <span>{{ getMediaSlotLabel(mediaIndex) }}</span>
-          </button>
+            <img
+              class="project-gallery-image"
+              [class.is-repair-focus]="galleryProject.title === 'Repair Management Monitoring System'"
+              [style.objectFit]="getProjectMediaFit(galleryMedia, 'gallery')"
+              [style.objectPosition]="getProjectMediaPosition(galleryMedia, 'gallery')"
+              [style.transform]="getGalleryImageTransform(galleryMedia)"
+              [style.transformOrigin]="getProjectMediaTransformOrigin(galleryMedia, 'gallery')"
+              [src]="galleryMedia.src"
+              [alt]="galleryProject.title + ' gallery image: ' + galleryMedia.label"
+              loading="lazy"
+            />
+
+            @if (shouldShowGalleryDots()) {
+            <div class="project-gallery-dots is-overlay" aria-label="Gallery pages">
+              @for (dotIndex of visibleGalleryDots; track dotIndex) {
+                <button
+                  class="project-gallery-dot"
+                  type="button"
+                  [class.is-active]="getGalleryMediaIndex() === dotIndex"
+                  [attr.aria-label]="'Go to image ' + (dotIndex + 1)"
+                  [attr.aria-pressed]="getGalleryMediaIndex() === dotIndex"
+                  (click)="setActiveGalleryMedia(dotIndex)"
+                ></button>
+              }
+            </div>
+            }
+          </div>
+        }
+
+        @if (shouldShowGalleryRail()) {
+        <div class="project-gallery-rail">
+          @for (thumb of visibleGalleryThumbs; track thumb.media.src) {
+            <button
+              class="project-gallery-thumb"
+              type="button"
+              [class.is-mobile-thumb]="thumb.media.frame === 'mobile'"
+              [class.is-active]="getGalleryMediaIndex() === thumb.index"
+              [attr.aria-pressed]="getGalleryMediaIndex() === thumb.index"
+              (click)="setActiveGalleryMedia(thumb.index)"
+            >
+              <img [src]="thumb.media.src" [alt]="galleryProject.title + ' gallery thumbnail: ' + thumb.media.label" loading="lazy" />
+              <span>{{ getMediaSlotLabel(thumb.index) }}</span>
+            </button>
+          }
+        </div>
         }
       </div>
     </section>
