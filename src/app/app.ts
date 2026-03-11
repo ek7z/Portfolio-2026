@@ -1065,22 +1065,7 @@ export class App implements AfterViewInit, OnDestroy {
       return [];
     }
 
-    if (!this.isMobileViewport || media.length <= 3 || !this.shouldShowGalleryRail()) {
-      return media.map((mediaItem, index) => ({ media: mediaItem, index }));
-    }
-
-    const activeIndex = this.getGalleryMediaIndex();
-    let start = Math.max(activeIndex - 1, 0);
-    let end = Math.min(start + 3, media.length);
-
-    if (end - start < 3) {
-      start = Math.max(end - 3, 0);
-    }
-
-    return media.slice(start, end).map((mediaItem, offset) => ({
-      media: mediaItem,
-      index: start + offset,
-    }));
+    return media.map((mediaItem, index) => ({ media: mediaItem, index }));
   }
 
   get visibleGalleryDots(): number[] {
