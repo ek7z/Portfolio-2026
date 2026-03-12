@@ -170,6 +170,26 @@ body.paper-dark app-root .copy-phone[aria-label='Phone number copied'] .contact-
   color: #121212;
 }
 
+body.paper-dark app-root .avatar-photo {
+  background: linear-gradient(180deg, #152033 0%, #1a2940 100%);
+}
+
+body.paper-dark app-root .avatar-photo::before {
+  background:
+    linear-gradient(
+      110deg,
+      transparent 0%,
+      rgb(141 235 244 / 0) 28%,
+      rgb(141 235 244 / 0.32) 50%,
+      rgb(141 235 244 / 0) 72%,
+      transparent 100%
+    );
+}
+
+body.paper-dark app-root .avatar-photo::after {
+  border-color: rgb(243 236 223 / 0.12);
+}
+
 body.paper-dark app-root .hero-focus-wrap {
   border-top-color: rgb(243 236 223 / 0.34);
 }
@@ -573,6 +593,30 @@ body.paper-dark app-root .chatbot-input-wrap input {
   box-shadow: 2px 2px 0 #070c14;
 }
 
+body.paper-dark app-root .chatbot-input-wrap input {
+  caret-color: #101722;
+  -webkit-text-fill-color: #121212;
+}
+
+body.paper-dark app-root .chatbot-input-wrap input::placeholder {
+  color: rgb(18 18 18 / 0.42);
+  -webkit-text-fill-color: rgb(18 18 18 / 0.42);
+}
+
+body.paper-dark app-root .chatbot-input-wrap input:focus {
+  border-color: #8debf4;
+  box-shadow:
+    0 0 0 2px rgb(141 235 244 / 0.18),
+    2px 2px 0 #070c14;
+}
+
+body.paper-dark app-root .chatbot-avatar,
+body.paper-dark app-root .chatbot-launch-avatar {
+  background: linear-gradient(180deg, #f4efe5 0%, #ffe2a4 100%);
+  border-color: #101722;
+  box-shadow: 1px 1px 0 #070c14;
+}
+
 body.paper-dark app-root .chatbot-prompt-chip {
   background: #ffe07a;
   color: #121212;
@@ -837,6 +881,22 @@ body.paper-dark app-root :is(
   box-shadow: 4px 4px 0 #070c14;
 }
 
+body.paper-dark app-root .project-media-shell {
+  --media-loader-surface: linear-gradient(180deg, rgb(15 24 38 / 0.84) 0%, rgb(18 29 45 / 0.72) 100%);
+  --media-loader-sheen:
+    linear-gradient(
+      110deg,
+      transparent 0%,
+      rgb(141 235 244 / 0) 24%,
+      rgb(141 235 244 / 0.28) 50%,
+      rgb(141 235 244 / 0) 76%,
+      transparent 100%
+    );
+  --media-loader-pill: rgb(17 26 40 / 0.86);
+  --media-loader-pill-border: rgb(79 165 175 / 0.34);
+  --media-loader-text: rgb(245 239 228 / 0.84);
+}
+
 body.paper-dark app-root .project-screen-frame {
   background: #f7f3ea;
   border-color: #101722;
@@ -904,6 +964,19 @@ body.paper-dark app-root :is(
   .project-mobile-action-row
 ) {
   color: #121212;
+}
+
+body.paper-dark app-root .project-mobile-device-toggle {
+  background: #162033;
+  color: #f5efe4 !important;
+  border-color: #324866 !important;
+  box-shadow: 2px 2px 0 #070c14 !important;
+}
+
+body.paper-dark app-root .project-mobile-device-toggle.is-active {
+  background: #8debf4;
+  color: #101722 !important;
+  border-color: #101722 !important;
 }
 
 body.paper-dark app-root .timeline-item.is-current {

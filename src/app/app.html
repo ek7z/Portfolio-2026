@@ -138,10 +138,13 @@
       <div class="avatar-col hero-pop reveal delay-1">
         <figure
           class="avatar-photo"
-          [class.is-revealed]="isPhotoRevealed"
+          [class.is-loading]="isProfileImageLoading"
+          [class.is-real-ready]="isProfileRealLoaded"
+          [class.is-revealed-ready]="isPhotoRevealed && isProfileRealLoaded"
           role="button"
           tabindex="0"
           [attr.aria-pressed]="isPhotoRevealed"
+          [attr.aria-busy]="isProfileImageLoading"
           aria-label="Toggle profile photo"
           (pointerup)="onPhotoPointer($event)"
           (keydown.enter)="togglePhotoReveal()"
@@ -149,15 +152,22 @@
         >
           <img
             class="avatar-layer avatar-cartoon"
-            src="assets/profile/jericho-cartoon.png"
+            [class.is-loaded]="isProfileCartoonLoaded"
+            [src]="profileCartoonSrc"
             alt="Jericho cartoon portrait"
             loading="eager"
+            decoding="async"
+            fetchpriority="high"
+            (load)="onProfileImageLoad('cartoon')"
           />
           <img
             class="avatar-layer avatar-real"
-            src="assets/profile/jericho-photo.jpg"
+            [class.is-loaded]="isProfileRealLoaded"
+            [src]="profileRealSrc"
             alt="Jericho original portrait"
             loading="lazy"
+            decoding="async"
+            (load)="onProfileImageLoad('real')"
           />
         </figure>
         <div class="avatar-meta">
@@ -677,20 +687,32 @@
                     [class.is-poster-shot]="activeMedia.frame === 'poster'"
                     [attr.data-presentation]="activeMedia.presentation"
                   >
-                    <img
-                      class="project-screen-image project-media-image"
+                    <div
+                      class="project-media-shell is-fill"
                       [class.is-loaded]="isMediaLoaded(activeMedia.src)"
-                      [style.objectFit]="getProjectMediaFit(activeMedia, 'hero')"
-                      [style.objectPosition]="getProjectMediaPosition(activeMedia, 'hero')"
-                      [style.transform]="getProjectMediaTransform(activeMedia, 'hero')"
-                      [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'hero')"
-                      [src]="activeMedia.src"
-                      [alt]="project.title + ' screenshot: ' + activeMedia.label"
-                      decoding="async"
-                      fetchpriority="high"
-                      loading="lazy"
-                      (load)="onMediaImageLoad(activeMedia.src)"
-                    />
+                      [class.is-error]="hasMediaError(activeMedia.src)"
+                      [attr.aria-busy]="!isMediaLoaded(activeMedia.src) && !hasMediaError(activeMedia.src)"
+                    >
+                      <span class="project-media-loader" aria-hidden="true">
+                        <span class="project-media-loader-bar"></span>
+                        <span class="project-media-loader-label">{{ getMediaStatusLabel(activeMedia.src) }}</span>
+                      </span>
+                      <img
+                        class="project-screen-image project-media-image"
+                        [class.is-loaded]="isMediaLoaded(activeMedia.src)"
+                        [style.objectFit]="getProjectMediaFit(activeMedia, 'hero')"
+                        [style.objectPosition]="getProjectMediaPosition(activeMedia, 'hero')"
+                        [style.transform]="getProjectMediaTransform(activeMedia, 'hero')"
+                        [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'hero')"
+                        [src]="activeMedia.src"
+                        [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                        decoding="async"
+                        fetchpriority="high"
+                        loading="lazy"
+                        (load)="onMediaImageLoad(activeMedia.src)"
+                        (error)="onMediaImageError(activeMedia.src)"
+                      />
+                    </div>
                   </div>
                 </div>
             </button>
@@ -792,30 +814,54 @@
           @if (getProjectMediaByFrame(project, 'desktop'); as desktopMedia) {
             <button class="project-device-board is-desktop" type="button" (click)="openProjectGallery(project, getProjectMediaIndexByFrame(project, 'desktop'), 'desktop')">
               <span class="project-device-kicker">Admin Portal</span>
-              <img
-                class="project-device-image project-media-image"
+              <div
+                class="project-media-shell"
                 [class.is-loaded]="isMediaLoaded(desktopMedia.src)"
-                [src]="desktopMedia.src"
-                [alt]="project.title + ' web admin preview'"
-                decoding="async"
-                loading="lazy"
-                (load)="onMediaImageLoad(desktopMedia.src)"
-              />
+                [class.is-error]="hasMediaError(desktopMedia.src)"
+                [attr.aria-busy]="!isMediaLoaded(desktopMedia.src) && !hasMediaError(desktopMedia.src)"
+              >
+                <span class="project-media-loader" aria-hidden="true">
+                  <span class="project-media-loader-bar"></span>
+                  <span class="project-media-loader-label">{{ getMediaStatusLabel(desktopMedia.src) }}</span>
+                </span>
+                <img
+                  class="project-device-image project-media-image"
+                  [class.is-loaded]="isMediaLoaded(desktopMedia.src)"
+                  [src]="desktopMedia.src"
+                  [alt]="project.title + ' web admin preview'"
+                  decoding="async"
+                  loading="lazy"
+                  (load)="onMediaImageLoad(desktopMedia.src)"
+                  (error)="onMediaImageError(desktopMedia.src)"
+                />
+              </div>
             </button>
           }
 
           @if (getProjectMediaByFrame(project, 'mobile'); as mobileMedia) {
             <button class="project-device-board is-mobile" type="button" (click)="openProjectGallery(project, getProjectMediaIndexByFrame(project, 'mobile'), 'mobile')">
               <span class="project-device-kicker">Customer App</span>
-              <img
-                class="project-device-image project-media-image"
+              <div
+                class="project-media-shell"
                 [class.is-loaded]="isMediaLoaded(mobileMedia.src)"
-                [src]="mobileMedia.src"
-                [alt]="project.title + ' mobile preview'"
-                decoding="async"
-                loading="lazy"
-                (load)="onMediaImageLoad(mobileMedia.src)"
-              />
+                [class.is-error]="hasMediaError(mobileMedia.src)"
+                [attr.aria-busy]="!isMediaLoaded(mobileMedia.src) && !hasMediaError(mobileMedia.src)"
+              >
+                <span class="project-media-loader" aria-hidden="true">
+                  <span class="project-media-loader-bar"></span>
+                  <span class="project-media-loader-label">{{ getMediaStatusLabel(mobileMedia.src) }}</span>
+                </span>
+                <img
+                  class="project-device-image project-media-image"
+                  [class.is-loaded]="isMediaLoaded(mobileMedia.src)"
+                  [src]="mobileMedia.src"
+                  [alt]="project.title + ' mobile preview'"
+                  decoding="async"
+                  loading="lazy"
+                  (load)="onMediaImageLoad(mobileMedia.src)"
+                  (error)="onMediaImageError(mobileMedia.src)"
+                />
+              </div>
             </button>
           }
         </div>
@@ -870,20 +916,32 @@
                 [attr.aria-label]="'Open gallery for ' + project.title"
                 (click)="openProjectGallery(project)"
               >
-                <img
-                  class="project-showcase-image project-media-image"
+                <div
+                  class="project-media-shell"
                   [class.is-loaded]="isMediaLoaded(activeMedia.src)"
-                  [attr.data-presentation]="activeMedia.presentation"
-                  [style.objectFit]="getProjectMediaFit(activeMedia, 'card')"
-                  [style.objectPosition]="getProjectMediaPosition(activeMedia, 'card')"
-                  [style.transform]="getProjectMediaTransform(activeMedia, 'card')"
-                  [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'card')"
-                  [src]="activeMedia.src"
-                  [alt]="project.title + ' screenshot: ' + activeMedia.label"
-                  decoding="async"
-                  loading="lazy"
-                  (load)="onMediaImageLoad(activeMedia.src)"
-                />
+                  [class.is-error]="hasMediaError(activeMedia.src)"
+                  [attr.aria-busy]="!isMediaLoaded(activeMedia.src) && !hasMediaError(activeMedia.src)"
+                >
+                  <span class="project-media-loader" aria-hidden="true">
+                    <span class="project-media-loader-bar"></span>
+                    <span class="project-media-loader-label">{{ getMediaStatusLabel(activeMedia.src) }}</span>
+                  </span>
+                  <img
+                    class="project-showcase-image project-media-image"
+                    [class.is-loaded]="isMediaLoaded(activeMedia.src)"
+                    [attr.data-presentation]="activeMedia.presentation"
+                    [style.objectFit]="getProjectMediaFit(activeMedia, 'card')"
+                    [style.objectPosition]="getProjectMediaPosition(activeMedia, 'card')"
+                    [style.transform]="getProjectMediaTransform(activeMedia, 'card')"
+                    [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'card')"
+                    [src]="activeMedia.src"
+                    [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                    decoding="async"
+                    loading="lazy"
+                    (load)="onMediaImageLoad(activeMedia.src)"
+                    (error)="onMediaImageError(activeMedia.src)"
+                  />
+                </div>
               </button>
             }
 
@@ -1040,19 +1098,31 @@
                     class="project-screen-canvas project-mobile-preview-canvas"
                     [attr.data-presentation]="activeMedia.presentation"
                   >
-                    <img
-                      class="project-screen-image project-media-image"
+                    <div
+                      class="project-media-shell is-fill"
                       [class.is-loaded]="isMediaLoaded(activeMedia.src)"
-                      [style.objectFit]="getProjectMediaFit(activeMedia, 'hero')"
-                      [style.objectPosition]="getProjectMediaPosition(activeMedia, 'hero')"
-                      [style.transform]="getProjectMediaTransform(activeMedia, 'hero')"
-                      [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'hero')"
-                      [src]="activeMedia.src"
-                      [alt]="project.title + ' screenshot: ' + activeMedia.label"
-                      decoding="async"
-                      loading="lazy"
-                      (load)="onMediaImageLoad(activeMedia.src)"
-                    />
+                      [class.is-error]="hasMediaError(activeMedia.src)"
+                      [attr.aria-busy]="!isMediaLoaded(activeMedia.src) && !hasMediaError(activeMedia.src)"
+                    >
+                      <span class="project-media-loader" aria-hidden="true">
+                        <span class="project-media-loader-bar"></span>
+                        <span class="project-media-loader-label">{{ getMediaStatusLabel(activeMedia.src) }}</span>
+                      </span>
+                      <img
+                        class="project-screen-image project-media-image"
+                        [class.is-loaded]="isMediaLoaded(activeMedia.src)"
+                        [style.objectFit]="getProjectMediaFit(activeMedia, 'hero')"
+                        [style.objectPosition]="getProjectMediaPosition(activeMedia, 'hero')"
+                        [style.transform]="getProjectMediaTransform(activeMedia, 'hero')"
+                        [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'hero')"
+                        [src]="activeMedia.src"
+                        [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                        decoding="async"
+                        loading="lazy"
+                        (load)="onMediaImageLoad(activeMedia.src)"
+                        (error)="onMediaImageError(activeMedia.src)"
+                      />
+                    </div>
                   </div>
                 </div>
               </button>
@@ -1155,15 +1225,27 @@
               <span class="project-device-kicker">
                 {{ getActiveMobileDeviceFrame(project) === 'mobile' ? 'Customer App' : 'Admin Portal' }}
               </span>
-              <img
-                class="project-device-image project-media-image"
+              <div
+                class="project-media-shell"
                 [class.is-loaded]="isMediaLoaded(activeMedia.src)"
-                [src]="activeMedia.src"
-                [alt]="project.title + ' preview'"
-                decoding="async"
-                loading="lazy"
-                (load)="onMediaImageLoad(activeMedia.src)"
-              />
+                [class.is-error]="hasMediaError(activeMedia.src)"
+                [attr.aria-busy]="!isMediaLoaded(activeMedia.src) && !hasMediaError(activeMedia.src)"
+              >
+                <span class="project-media-loader" aria-hidden="true">
+                  <span class="project-media-loader-bar"></span>
+                  <span class="project-media-loader-label">{{ getMediaStatusLabel(activeMedia.src) }}</span>
+                </span>
+                <img
+                  class="project-device-image project-media-image"
+                  [class.is-loaded]="isMediaLoaded(activeMedia.src)"
+                  [src]="activeMedia.src"
+                  [alt]="project.title + ' preview'"
+                  decoding="async"
+                  loading="lazy"
+                  (load)="onMediaImageLoad(activeMedia.src)"
+                  (error)="onMediaImageError(activeMedia.src)"
+                />
+              </div>
             </button>
           }
 
@@ -1236,19 +1318,31 @@
                   [attr.aria-label]="'Open gallery for ' + project.title"
                   (click)="openProjectGallery(project)"
                 >
-                  <img
-                    class="project-mobile-thumb-image project-media-image"
+                  <div
+                    class="project-media-shell is-compact"
                     [class.is-loaded]="isMediaLoaded(activeMedia.src)"
-                    [style.objectFit]="getProjectMediaFit(activeMedia, 'card')"
-                    [style.objectPosition]="getProjectMediaPosition(activeMedia, 'card')"
-                    [style.transform]="getProjectMediaTransform(activeMedia, 'card')"
-                    [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'card')"
-                    [src]="activeMedia.src"
-                    [alt]="project.title + ' screenshot: ' + activeMedia.label"
-                    decoding="async"
-                    loading="lazy"
-                    (load)="onMediaImageLoad(activeMedia.src)"
-                  />
+                    [class.is-error]="hasMediaError(activeMedia.src)"
+                    [attr.aria-busy]="!isMediaLoaded(activeMedia.src) && !hasMediaError(activeMedia.src)"
+                  >
+                    <span class="project-media-loader" aria-hidden="true">
+                      <span class="project-media-loader-bar"></span>
+                      <span class="project-media-loader-label">{{ getMediaStatusLabel(activeMedia.src) }}</span>
+                    </span>
+                    <img
+                      class="project-mobile-thumb-image project-media-image"
+                      [class.is-loaded]="isMediaLoaded(activeMedia.src)"
+                      [style.objectFit]="getProjectMediaFit(activeMedia, 'card')"
+                      [style.objectPosition]="getProjectMediaPosition(activeMedia, 'card')"
+                      [style.transform]="getProjectMediaTransform(activeMedia, 'card')"
+                      [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'card')"
+                      [src]="activeMedia.src"
+                      [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                      decoding="async"
+                      loading="lazy"
+                      (load)="onMediaImageLoad(activeMedia.src)"
+                      (error)="onMediaImageError(activeMedia.src)"
+                    />
+                  </div>
                 </button>
               }
 
@@ -1351,7 +1445,7 @@
   </section>
 </main>
 
-<div class="mobile-cta-bar" [class.is-suppressed]="isProjectGalleryOpen || isResumePreviewOpen">
+<div class="mobile-cta-bar" [class.is-suppressed]="isProjectGalleryOpen || isResumePreviewOpen || isChatOpen">
   <a class="mobile-cta-btn btn-yellow" [href]="'mailto:' + profile.email" aria-label="Hire me via email">Hire Me</a>
   <button class="mobile-cta-btn btn-cyan" type="button" aria-label="Open resume preview" (click)="openResumePreview()">
     View Resume
@@ -1463,19 +1557,31 @@
             (touchstart)="onGalleryTouchStart($event)"
             (touchend)="onGalleryTouchEnd($event)"
           >
-            <img
-              class="project-gallery-image project-media-image"
+            <div
+              class="project-media-shell is-fill"
               [class.is-loaded]="isMediaLoaded(galleryMedia.src)"
-              [style.objectFit]="getProjectMediaFit(galleryMedia, 'gallery')"
-              [style.objectPosition]="getProjectMediaPosition(galleryMedia, 'gallery')"
-              [style.transform]="getGalleryImageTransform(galleryMedia)"
-              [style.transformOrigin]="getProjectMediaTransformOrigin(galleryMedia, 'gallery')"
-              [src]="galleryMedia.src"
-              [alt]="galleryProject.title + ' gallery image: ' + galleryMedia.label"
-              decoding="async"
-              loading="lazy"
-              (load)="onMediaImageLoad(galleryMedia.src)"
-            />
+              [class.is-error]="hasMediaError(galleryMedia.src)"
+              [attr.aria-busy]="!isMediaLoaded(galleryMedia.src) && !hasMediaError(galleryMedia.src)"
+            >
+              <span class="project-media-loader" aria-hidden="true">
+                <span class="project-media-loader-bar"></span>
+                <span class="project-media-loader-label">{{ getMediaStatusLabel(galleryMedia.src) }}</span>
+              </span>
+              <img
+                class="project-gallery-image project-media-image"
+                [class.is-loaded]="isMediaLoaded(galleryMedia.src)"
+                [style.objectFit]="getProjectMediaFit(galleryMedia, 'gallery')"
+                [style.objectPosition]="getProjectMediaPosition(galleryMedia, 'gallery')"
+                [style.transform]="getGalleryImageTransform(galleryMedia)"
+                [style.transformOrigin]="getProjectMediaTransformOrigin(galleryMedia, 'gallery')"
+                [src]="galleryMedia.src"
+                [alt]="galleryProject.title + ' gallery image: ' + galleryMedia.label"
+                decoding="async"
+                loading="lazy"
+                (load)="onMediaImageLoad(galleryMedia.src)"
+                (error)="onMediaImageError(galleryMedia.src)"
+              />
+            </div>
 
             @if (shouldShowGalleryDots()) {
             <div class="project-gallery-dots is-overlay" aria-label="Gallery pages">
@@ -1507,15 +1613,27 @@
               [attr.aria-pressed]="getGalleryMediaIndex() === thumb.index"
               (click)="setActiveGalleryMedia(thumb.index)"
             >
-              <img
-                class="project-media-image"
+              <div
+                class="project-media-shell is-compact"
                 [class.is-loaded]="isMediaLoaded(thumb.media.src)"
-                [src]="thumb.media.src"
-                [alt]="galleryProject.title + ' gallery thumbnail: ' + thumb.media.label"
-                decoding="async"
-                loading="lazy"
-                (load)="onMediaImageLoad(thumb.media.src)"
-              />
+                [class.is-error]="hasMediaError(thumb.media.src)"
+                [attr.aria-busy]="!isMediaLoaded(thumb.media.src) && !hasMediaError(thumb.media.src)"
+              >
+                <span class="project-media-loader" aria-hidden="true">
+                  <span class="project-media-loader-bar"></span>
+                  <span class="project-media-loader-label">{{ getMediaStatusLabel(thumb.media.src) }}</span>
+                </span>
+                <img
+                  class="project-media-image"
+                  [class.is-loaded]="isMediaLoaded(thumb.media.src)"
+                  [src]="thumb.media.src"
+                  [alt]="galleryProject.title + ' gallery thumbnail: ' + thumb.media.label"
+                  decoding="async"
+                  loading="lazy"
+                  (load)="onMediaImageLoad(thumb.media.src)"
+                  (error)="onMediaImageError(thumb.media.src)"
+                />
+              </div>
             </button>
           }
         </div>
@@ -1610,8 +1728,8 @@
       </div>
 
       <div class="chatbot-foot">
-        <span>Ask about stack, projects, AI focus, or contact.</span>
-        <span>{{ chatDraft.length }}/{{ maxChatChars }}</span>
+        <span class="chatbot-foot-copy">Ask about stack, projects, AI focus, or contact.</span>
+        <span class="chatbot-foot-count">{{ chatDraft.length }}/{{ maxChatChars }}</span>
       </div>
     </section>
   }

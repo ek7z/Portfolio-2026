@@ -279,6 +279,8 @@ export class App implements AfterViewInit, OnDestroy {
   isProjectGalleryOpen = false;
   isMobileMenuOpen = false;
   isPhotoRevealed = false;
+  isProfileCartoonLoaded = false;
+  isProfileRealLoaded = false;
   isPhoneCopied = false;
   isChatOpen = false;
   isBotTyping = false;
@@ -294,6 +296,7 @@ export class App implements AfterViewInit, OnDestroy {
   private hasAdjustedInitialHashOffset = false;
   private homeHashLockTimers: number[] = [];
   private phoneCopyTimer: number | null = null;
+  private profileRealPreloadTimer: number | null = null;
   private catFrameTimer: number | null = null;
   private chatReplyTimer: number | null = null;
   private chatAutoOpenTimer: number | null = null;
@@ -306,6 +309,7 @@ export class App implements AfterViewInit, OnDestroy {
   private activeProjectMediaIndex: Record<string, number> = {};
   private activeMobileDeviceFrame: Record<string, ProjectMediaItem['frame']> = {};
   private loadedMediaSources = new Set<string>();
+  private failedMediaSources = new Set<string>();
   private preloadedMediaSources = new Set<string>();
   private expandedExperienceRoles = new Set<string>();
   private readonly themeStorageKey = 'jericho-paper-theme';
@@ -327,6 +331,8 @@ export class App implements AfterViewInit, OnDestroy {
   readonly resumeFileUrl = 'resume/JERICHO SANTOS - 2026.pdf';
   readonly resumeViewerSrc: SafeResourceUrl;
   readonly maxChatChars = 1000;
+  readonly profileCartoonSrc = 'assets/profile/jericho-cartoon.png';
+  readonly profileRealSrc = 'assets/profile/jericho-photo.jpg';
   @ViewChildren('catFrameEl') private catFrameEls?: QueryList<ElementRef<HTMLImageElement>>;
   @ViewChild('chatScrollContainer') private chatScrollContainer?: ElementRef<HTMLDivElement>;
   @ViewChild('projectGalleryRailEl') private projectGalleryRailEl?: ElementRef<HTMLDivElement>;
@@ -343,7 +349,7 @@ export class App implements AfterViewInit, OnDestroy {
     'Show me your strongest projects.',
     'How can I contact you?',
   ];
-  readonly chatAvatarSrc = 'assets/profile/jericho-cartoon.png';
+  readonly chatAvatarSrc = this.profileRealSrc;
   readonly chatMessages: ChatMessage[] = [
     {
       id: 1,
@@ -1188,11 +1194,29 @@ export class App implements AfterViewInit, OnDestroy {
       return;
     }
 
+    this.failedMediaSources.delete(src);
+    this.loadedMediaSources.add(src);
+  }
+
+  onMediaImageError(src: string): void {
+    if (!src) {
+      return;
+    }
+
+    this.failedMediaSources.add(src);
     this.loadedMediaSources.add(src);
   }
 
   isMediaLoaded(src: string): boolean {
     return this.loadedMediaSources.has(src);
+  }
+
+  hasMediaError(src: string): boolean {
+    return this.failedMediaSources.has(src);
+  }
+
+  getMediaStatusLabel(src: string): string {
+    return this.hasMediaError(src) ? 'Preview unavailable' : 'Loading preview';
   }
 
   private preloadMediaSources(sources: Array<string | null | undefined>): void {
@@ -1209,6 +1233,7 @@ export class App implements AfterViewInit, OnDestroy {
       image.decoding = 'async';
       image.src = src;
       image.onload = () => this.onMediaImageLoad(src);
+      image.onerror = () => this.onMediaImageError(src);
       this.preloadedMediaSources.add(src);
     }
   }
@@ -1614,7 +1639,11 @@ export class App implements AfterViewInit, OnDestroy {
     }
 
     document.body.style.overflow =
-      this.isResumePreviewOpen || this.isProjectGalleryOpen ? 'hidden' : '';
+      this.isResumePreviewOpen ||
+      this.isProjectGalleryOpen ||
+      (this.isChatOpen && this.isMobileViewport)
+        ? 'hidden'
+        : '';
   }
 
   onNavSelect(sectionId: string): void {
@@ -1696,6 +1725,19 @@ export class App implements AfterViewInit, OnDestroy {
     return exp.technicalDetails.length > 0;
   }
 
+  onProfileImageLoad(layer: 'cartoon' | 'real'): void {
+    if (layer === 'cartoon') {
+      this.isProfileCartoonLoaded = true;
+      return;
+    }
+
+    this.isProfileRealLoaded = true;
+  }
+
+  get isProfileImageLoading(): boolean {
+    return !this.isProfileCartoonLoaded || (this.isPhotoRevealed && !this.isProfileRealLoaded);
+  }
+
   toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
@@ -1707,6 +1749,7 @@ export class App implements AfterViewInit, OnDestroy {
   openChat(): void {
     this.isChatOpen = true;
     this.markChatFirstVisitDone();
+    this.syncBodyScrollLock();
     this.scrollChatToBottom();
   }
 
@@ -1717,6 +1760,7 @@ export class App implements AfterViewInit, OnDestroy {
       window.clearTimeout(this.chatReplyTimer);
       this.chatReplyTimer = null;
     }
+    this.syncBodyScrollLock();
   }
 
   onChatDraftInput(event: Event): void {
@@ -1799,6 +1843,10 @@ export class App implements AfterViewInit, OnDestroy {
 
   togglePhotoReveal(): void {
     this.isPhotoRevealed = !this.isPhotoRevealed;
+
+    if (this.isPhotoRevealed && !this.isProfileRealLoaded) {
+      this.preloadProfileRealImage();
+    }
   }
 
   onPhotoPointer(event: Event): void {
@@ -1833,6 +1881,7 @@ export class App implements AfterViewInit, OnDestroy {
     this.startCatFrameLoop();
     this.scheduleHomeHashTopLock();
     this.scheduleFirstVisitChatOpen();
+    this.scheduleProfileRealImagePreload();
 
     // Defer initial section sync to avoid NG0100 during first render check.
     window.setTimeout(() => {
@@ -1862,6 +1911,10 @@ export class App implements AfterViewInit, OnDestroy {
     if (this.phoneCopyTimer !== null && typeof window !== 'undefined') {
       window.clearTimeout(this.phoneCopyTimer);
       this.phoneCopyTimer = null;
+    }
+    if (this.profileRealPreloadTimer !== null && typeof window !== 'undefined') {
+      window.clearTimeout(this.profileRealPreloadTimer);
+      this.profileRealPreloadTimer = null;
     }
     if (this.chatAutoOpenTimer !== null && typeof window !== 'undefined') {
       window.clearTimeout(this.chatAutoOpenTimer);
@@ -1908,6 +1961,7 @@ export class App implements AfterViewInit, OnDestroy {
 
     this.cacheTrackedSections();
     this.updateActiveSectionFromViewport();
+    this.syncBodyScrollLock();
 
     if (this.isProjectGalleryOpen) {
       this.scheduleGalleryRailSync(false);
@@ -1917,6 +1971,32 @@ export class App implements AfterViewInit, OnDestroy {
   @HostListener('window:scroll')
   onWindowScroll(): void {
     this.updateActiveSectionFromViewport();
+  }
+
+  private scheduleProfileRealImagePreload(): void {
+    if (typeof window === 'undefined' || this.isProfileRealLoaded) {
+      return;
+    }
+
+    if (this.profileRealPreloadTimer !== null) {
+      window.clearTimeout(this.profileRealPreloadTimer);
+    }
+
+    this.profileRealPreloadTimer = window.setTimeout(() => {
+      this.profileRealPreloadTimer = null;
+      this.preloadProfileRealImage();
+    }, 420);
+  }
+
+  private preloadProfileRealImage(): void {
+    if (typeof Image === 'undefined' || this.isProfileRealLoaded) {
+      return;
+    }
+
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = this.profileRealSrc;
+    image.onload = () => this.onProfileImageLoad('real');
   }
 
   private scheduleGalleryRailSync(animate = true): void {
