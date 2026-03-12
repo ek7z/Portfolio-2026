@@ -125,8 +125,9 @@ const buildProjectMedia = (
 
 const buildRepairMediaCrop = (_screenNumber: number): ProjectMediaCrop =>
   buildMediaCrop({
-    hero: { position: 'center center', scale: 1.02, origin: 'center center' },
-    card: { position: 'center center', scale: 1.02, origin: 'center center' },
+    hero: { fit: 'contain', position: 'center top', scale: 1, origin: 'center top' },
+    card: { fit: 'contain', position: 'center top', scale: 1, origin: 'center top' },
+    gallery: { fit: 'contain', position: 'center top', scale: 1, origin: 'center top' },
   });
 
 const buildUiMediaCrop = (_screenNumber: number): ProjectMediaCrop =>
@@ -149,12 +150,14 @@ const buildPosterMediaCrop = (_screenNumber: number): ProjectMediaCrop =>
     card: { position: 'center 18%', origin: 'center center' },
   });
 
-const REPAIR_MEDIA_ENTRIES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+const REPAIR_MEDIA_ENTRIES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
 
 type ProjectItem = {
   title: string;
   description: string;
+  buildSummary: string;
   stage: string;
+  timeline: string;
   scope: string;
   impact: string;
   impactMetrics: string[];
@@ -164,6 +167,7 @@ type ProjectItem = {
   result: string;
   tone: string;
   badges: string[];
+  featuredVisualStyle?: 'standard' | 'compact';
   initialMediaIndex?: number;
   media: ProjectMediaItem[];
 };
@@ -175,12 +179,31 @@ type CertificationItem = {
   mark: string;
 };
 
+type ExperienceTrack = 'contract' | 'freelance' | 'internship';
+
+type ExperienceProofSignal = {
+  label: string;
+  value: string;
+};
+
+type ExperienceRelatedWork = {
+  label: string;
+  projectTitle?: string;
+};
+
 type ExperienceItem = {
   role: string;
   company: string;
   period: string;
-  track: 'contract' | 'freelance' | 'internship';
-  highlights: string[];
+  track: ExperienceTrack;
+  isCurrent?: boolean;
+  context: string;
+  owned: string;
+  impact: string;
+  selectedOutcomes: string[];
+  technicalDetails: string[];
+  proofSignals: ExperienceProofSignal[];
+  relatedWork: ExperienceRelatedWork[];
   badges: string[];
   tone: string;
 };
@@ -227,7 +250,6 @@ type StatItem = {
 };
 
 type ThemeMode = 'light' | 'dark';
-type MobileProjectTab = 'overview' | 'screens' | 'result';
 
 type ChatMessageCta = {
   label: string;
@@ -263,10 +285,8 @@ export class App implements AfterViewInit, OnDestroy {
   chatDraft = '';
   themeMode: ThemeMode = 'light';
   activeExperienceFilter: 'all' | 'contract' | 'freelance' | 'internship' = 'all';
-  activeProjectFilter: 'all' | 'enterprise' | 'freelance' | 'academic' | 'web' | 'mobile' = 'all';
   areCaseNotesExpanded = false;
   readonly initialCaseNotesVisibleCount = 2;
-  readonly collapsedHighlightCount = 2;
   private navLockSection: string | null = null;
   private navLockUntil = 0;
   private trackedSections: HTMLElement[] = [];
@@ -277,13 +297,16 @@ export class App implements AfterViewInit, OnDestroy {
   private catFrameTimer: number | null = null;
   private chatReplyTimer: number | null = null;
   private chatAutoOpenTimer: number | null = null;
+  private galleryRailSyncFrame: number | null = null;
+  private lastRevealViewportMode: 'mobile' | 'desktop' | null = null;
   private galleryTouchStartX: number | null = null;
   private galleryTouchStartY: number | null = null;
   private nextChatMessageId = 1;
   private catDomFrameIndex = 0;
   private activeProjectMediaIndex: Record<string, number> = {};
-  private activeMobileProjectTab: Record<string, MobileProjectTab> = {};
   private activeMobileDeviceFrame: Record<string, ProjectMediaItem['frame']> = {};
+  private loadedMediaSources = new Set<string>();
+  private preloadedMediaSources = new Set<string>();
   private expandedExperienceRoles = new Set<string>();
   private readonly themeStorageKey = 'jericho-paper-theme';
   private readonly chatFirstVisitStorageKey = 'jericho-chat-first-visit-done';
@@ -306,6 +329,9 @@ export class App implements AfterViewInit, OnDestroy {
   readonly maxChatChars = 1000;
   @ViewChildren('catFrameEl') private catFrameEls?: QueryList<ElementRef<HTMLImageElement>>;
   @ViewChild('chatScrollContainer') private chatScrollContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild('projectGalleryRailEl') private projectGalleryRailEl?: ElementRef<HTMLDivElement>;
+  @ViewChildren('projectGalleryThumbEl')
+  private projectGalleryThumbEls?: QueryList<ElementRef<HTMLButtonElement>>;
   private readonly catFrameCacheVersion = '20260303-1';
   readonly catFrameSources = Array.from(
     { length: 11 },
@@ -539,42 +565,95 @@ export class App implements AfterViewInit, OnDestroy {
     {
       role: 'Web Developer (Full-Stack / Contract)',
       company: 'Paragon Communication Corporation',
-      period: 'October 2025 - April 2026',
+      period: 'September 2025 - March 2026',
       track: 'contract',
+      isCurrent: true,
+      context:
+        'Paragon needed production-safe frontend fixes, reporting corrections, and cleaner role-based flows across aging PSMMS modules.',
+      owned:
+        'Owned responsive refactors, SQL/report logic fixes, permission updates, and cross-module support for repair monitoring plus PSMMS v2 UI work.',
+      impact:
+        'Stabilized live operational modules and shipped stakeholder-validated releases without breaking day-to-day admin workflows.',
+      selectedOutcomes: [
+        'Stabilized legacy PSMMS pages across mobile, tablet, and desktop views.',
+        'Corrected SQL filtering and aggregation logic, then shipped date-range and status-summary reporting.',
+      ],
+      technicalDetails: [
+        'Delivered workflow and permission updates through hotfix and release cycles with stakeholder validation before release.',
+        'Supported related internal modules under the same contract, including repair monitoring and PSMMS v2 UI deliverables.',
+      ],
+      proofSignals: [
+        { label: 'Environment', value: 'Production' },
+        { label: 'Delivery', value: 'Hotfix + release cycle' },
+        { label: 'Focus', value: 'Reporting + module support' },
+        { label: 'Status', value: 'Current' },
+      ],
+      relatedWork: [
+        { label: 'Paragon S2S MMS', projectTitle: 'Paragon S2S MMS (Enhancements and Maintenance)' },
+        { label: 'Repair Monitoring', projectTitle: 'Repair Management Monitoring System' },
+        { label: 'PSMMS V2 UI', projectTitle: 'PSMMS Version 2 UI Build' },
+      ],
       badges: ['PSMMS', 'SQL Reporting', 'Role Access', 'Production Support'],
       tone: 'timeline-contract',
-      highlights: [
-        'Refactored legacy PSMMS pages and responsiveness across mobile, tablet, and desktop views.',
-        'Corrected SQL queries, filtering, and aggregation logic; added date-range and status-summary reports.',
-        'Delivered workflow/permission updates, production hotfixes, and stakeholder-validated releases.',
-        'Supported related internal modules under the same Paragon contract, including repair and PSMMS v2 deliverables.',
-      ],
     },
     {
       role: 'Freelance Full-Stack Developer',
       company: 'DhongEye (QR Code-Based Service System)',
       period: 'January 2025 - Present',
       track: 'freelance',
+      isCurrent: true,
+      context:
+        'The client needed a service platform that could unify QR booking, role-based mobile flows, and admin-side lifecycle control.',
+      owned:
+        'Built the admin website, role-routed mobile experiences, booking rules, OTP auth, and operational dashboards from the ground up.',
+      impact:
+        'Delivered a client-ready system that replaced manual coordination with a clearer end-to-end booking and status workflow.',
+      selectedOutcomes: [
+        'Launched QR-based service flow with admin website plus role-specific mobile experiences.',
+        'Implemented OTP auth, role routing, and booking lifecycle rules with controlled edit and cancel behavior.',
+      ],
+      technicalDetails: [
+        'Built KPI dashboard, service, user, booking, and alerts modules to support day-to-day client operations.',
+        'Added pricing-lock logic and operational guardrails to reduce inconsistent booking and dispatch behavior.',
+      ],
+      proofSignals: [
+        { label: 'Environment', value: 'Client deployment' },
+        { label: 'Delivery', value: 'Greenfield build' },
+        { label: 'Focus', value: 'Web + mobile platform' },
+        { label: 'Status', value: 'Current' },
+      ],
+      relatedWork: [{ label: 'QR Service System', projectTitle: 'QR Code-Based Service System' }],
       badges: ['Web Admin', 'Mobile Apps', 'QR Workflow', 'Role Routing'],
       tone: 'timeline-freelance',
-      highlights: [
-        'Delivered QR-based service system with admin website plus mobile apps for customer, laborer, and rider roles.',
-        'Implemented OTP auth, role-based routing, and booking lifecycle rules with controlled edit/cancel behavior.',
-        'Built KPI dashboard, service/user/booking modules, alerts, and pricing-lock logic for operational stability.',
-      ],
     },
     {
       role: 'OJT Intern - DevOps Team',
       company: 'D&L Industries Inc. (Bagumbayan, Quezon City)',
       period: 'July 2024 - November 2024',
       track: 'internship',
-      badges: ['Power BI', 'SQL Reporting', 'Data Prep', 'Ops Workflow'],
-      tone: 'timeline-ops',
-      highlights: [
+      context:
+        'Operations teams needed cleaner internal reporting and better-prepared datasets for cross-department visibility.',
+      owned:
+        'Handled data prep, SQL extraction, and dashboard support work for internal reporting under the DevOps team.',
+      impact:
+        'Improved the reporting handoff pipeline and gave internal teams clearer operational data views during the internship period.',
+      selectedOutcomes: [
         'Built and maintained Power BI dashboards for internal operations reporting.',
         'Prepared multi-department datasets and wrote SQL scripts for extraction, filtering, and shaping.',
-        'Gained exposure to enterprise data pipelines and DevOps workflow practices.',
       ],
+      technicalDetails: [
+        'Worked across data prep and reporting support tasks that exposed enterprise pipeline discipline and handoff expectations.',
+        'Gained direct exposure to internal DevOps workflow practices while supporting operational reporting needs.',
+      ],
+      proofSignals: [
+        { label: 'Environment', value: 'Enterprise ops' },
+        { label: 'Delivery', value: 'Reporting support' },
+        { label: 'Focus', value: 'Power BI + SQL prep' },
+        { label: 'Status', value: 'Completed' },
+      ],
+      relatedWork: [{ label: 'Internal BI Dashboards' }],
+      badges: ['Power BI', 'SQL Reporting', 'Data Prep', 'Ops Workflow'],
+      tone: 'timeline-ops',
     },
   ];
 
@@ -600,21 +679,15 @@ export class App implements AfterViewInit, OnDestroy {
     { label: 'System Type', value: 'Web + Mobile + Ops Reporting', tone: 'metric-pink' },
   ];
 
-  readonly projectFilters = [
-    { id: 'all', label: 'All Projects' },
-    { id: 'enterprise', label: 'Enterprise' },
-    { id: 'freelance', label: 'Freelance' },
-    { id: 'academic', label: 'Academic' },
-    { id: 'web', label: 'Web' },
-    { id: 'mobile', label: 'Mobile' },
-  ] as const;
-
   readonly projects: ProjectItem[] = [
     {
       title: 'Paragon S2S MMS (Enhancements and Maintenance)',
       description:
         'Legacy PSMMS modules had UI inconsistencies and report mismatches across operations views.',
+      buildSummary:
+        'Enhanced existing production modules, refined reporting screens, and tightened responsive behavior across operational workflows.',
       stage: 'Contract Delivery',
+      timeline: 'Multi-release support',
       scope: 'Module Enhancements + Reporting',
       impact: 'Lower UI defects and cleaner operational decision data',
       impactMetrics: [
@@ -635,7 +708,10 @@ export class App implements AfterViewInit, OnDestroy {
       title: 'Repair Management Monitoring System',
       description:
         'Repair operations were tracked manually across disconnected files and status updates.',
+      buildSummary:
+        'Built a centralized repair, dispatch, and reporting workflow with request tracking, table views, and lifecycle visibility.',
       stage: 'Internal Deployment',
+      timeline: 'Greenfield rollout',
       scope: 'Repair + Dispatch Monitoring',
       impact: 'Single source of truth for repair and dispatch progress',
       impactMetrics: ['Built from Scratch', '5 Core Modules', 'Query + Index Optimization'],
@@ -646,6 +722,7 @@ export class App implements AfterViewInit, OnDestroy {
         'Deployed request-to-dispatch lifecycle with tracking history, report tables, and optimized query performance.',
       tone: 'project-cyan',
       badges: ['HTML', 'CSS', 'JavaScript', 'PHP', 'MySQL'],
+      featuredVisualStyle: 'compact',
       media: buildProjectMedia({
         folder: 'Repair',
         frame: 'desktop',
@@ -653,14 +730,18 @@ export class App implements AfterViewInit, OnDestroy {
         labelPrefix: 'Repair Screen',
         viewerLabel: 'Operations',
         presentation: 'wide',
-        cropByIndex: (index) => buildRepairMediaCrop(index + 1),
+        cropByIndex: (index) => buildRepairMediaCrop(REPAIR_MEDIA_ENTRIES[index] ?? REPAIR_MEDIA_ENTRIES[0]),
       }),
+      initialMediaIndex: 0,
     },
     {
       title: 'PSMMS Version 2 UI Build',
       description:
         'PSMMS v2 needed a reusable responsive frontend baseline for multiple product lines.',
+      buildSummary:
+        'Designed reusable Angular layouts, shared screen patterns, and navigation structure for multiple product lines.',
       stage: 'UI Phase (Paused)',
+      timeline: 'Foundation sprint',
       scope: 'Frontend Architecture',
       impact: 'Consistent layout system for faster module rollout',
       impactMetrics: ['4 Product Lines', 'Reusable Screen Patterns', 'Integration-Ready UI'],
@@ -686,7 +767,10 @@ export class App implements AfterViewInit, OnDestroy {
       title: 'QR Code-Based Service System',
       description:
         'Service booking and production updates needed role-based digital flow and status visibility.',
+      buildSummary:
+        'Built QR-based booking, OTP login, admin controls, and role-specific mobile and web flows across the service lifecycle.',
       stage: 'Client System Deployed',
+      timeline: 'Client delivery cycle',
       scope: 'QR Booking + Admin + Mobile',
       impact: 'End-to-end visibility from booking to completion',
       impactMetrics: ['4 Role Flows', 'OTP + Role Routing', 'Live Status Lifecycle'],
@@ -703,7 +787,10 @@ export class App implements AfterViewInit, OnDestroy {
       title: "D'Speedwash App",
       description:
         'Carwash booking flow needed mobile-first customer scheduling with admin-side monitoring and updates.',
+      buildSummary:
+        'Delivered an admin portal plus a customer booking app with scheduling, queue visibility, and announcement flows.',
       stage: 'Academic Capstone',
+      timeline: 'Capstone term',
       scope: 'Booking + Admin Management',
       impact: 'Reduced manual booking coordination workload',
       impactMetrics: ['Capstone Delivery', 'Mobile + Admin Flow', 'End-to-End Booking'],
@@ -739,7 +826,10 @@ export class App implements AfterViewInit, OnDestroy {
       title: 'Bayani TTRPG',
       description:
         'Game project needed a strong visual identity and a presentable playable interface for the subject showcase.',
+      buildSummary:
+        'Designed the visual menu flow, presentation screens, and themed interface treatment for the playable showcase build.',
       stage: 'Academic Game Build',
+      timeline: 'Showcase sprint',
       scope: 'Menu + Visual Presentation',
       impact: 'Stronger presentation quality for a concept-driven TTRPG project',
       impactMetrics: ['Game Subject Build', 'Menu Screen Polish', 'Lore-Driven Visual Tone'],
@@ -764,7 +854,10 @@ export class App implements AfterViewInit, OnDestroy {
       title: 'Apartease',
       description:
         'Property records and apartment processes needed centralized web-based management.',
+      buildSummary:
+        'Built admin-side modules for apartment records, tenant handling, and day-to-day property management workflows.',
       stage: 'Web System Build',
+      timeline: 'Academic build cycle',
       scope: 'Apartment Management',
       impact: 'Improved visibility of records and daily property operations',
       impactMetrics: ['Web Admin Panel', 'CRUD Operations', 'Records Centralization'],
@@ -825,22 +918,6 @@ export class App implements AfterViewInit, OnDestroy {
     }
   }
 
-  setProjectFilter(filter: string): void {
-    if (
-      filter === 'all' ||
-      filter === 'enterprise' ||
-      filter === 'freelance' ||
-      filter === 'academic' ||
-      filter === 'web' ||
-      filter === 'mobile'
-    ) {
-      this.activeProjectFilter = filter;
-      this.areCaseNotesExpanded = false;
-      this.closeProjectGallery();
-      this.refreshRevealAfterFilterChange();
-    }
-  }
-
   toggleCaseNotes(): void {
     this.areCaseNotesExpanded = !this.areCaseNotesExpanded;
     this.refreshRevealAfterFilterChange();
@@ -854,27 +931,19 @@ export class App implements AfterViewInit, OnDestroy {
     return this.experiences.filter((exp) => exp.track === this.activeExperienceFilter);
   }
 
-  get filteredProjects(): ProjectItem[] {
-    if (this.activeProjectFilter === 'all') {
-      return this.projects;
-    }
-
-    return this.projects.filter((project) => project.filters.includes(this.activeProjectFilter));
-  }
-
   get featuredProject(): ProjectItem | null {
-    if (!this.filteredProjects.length) {
+    if (!this.projects.length) {
       return null;
     }
 
     for (const title of this.featuredProjectPriority) {
-      const matchedProject = this.filteredProjects.find((project) => project.title === title);
+      const matchedProject = this.projects.find((project) => project.title === title);
       if (matchedProject) {
         return matchedProject;
       }
     }
 
-    return this.filteredProjects[0] ?? null;
+    return this.projects[0] ?? null;
   }
 
   get secondaryProjects(): ProjectItem[] {
@@ -884,13 +953,13 @@ export class App implements AfterViewInit, OnDestroy {
       return [];
     }
 
-    return this.filteredProjects.filter((project) => project.title !== featuredProject.title);
+    return this.projects.filter((project) => project.title !== featuredProject.title);
   }
 
   get visualProject(): ProjectItem | null {
     const featuredProject = this.featuredProject;
     const dSpeedwashProject =
-      this.filteredProjects.find((project) => project.title === "D'Speedwash App") ?? null;
+      this.projects.find((project) => project.title === "D'Speedwash App") ?? null;
 
     if (!dSpeedwashProject || dSpeedwashProject.title === featuredProject?.title) {
       return null;
@@ -903,7 +972,7 @@ export class App implements AfterViewInit, OnDestroy {
     const featuredProject = this.featuredProject;
     const visualProject = this.visualProject;
 
-    return this.filteredProjects.filter((project) => {
+    return this.projects.filter((project) => {
       if (project.title === featuredProject?.title) {
         return false;
       }
@@ -936,12 +1005,67 @@ export class App implements AfterViewInit, OnDestroy {
     return this.caseNoteProjects.length > this.initialCaseNotesVisibleCount;
   }
 
+  private getProjectPreferredMediaFrame(_project: ProjectItem): ProjectMediaFrame | null {
+    return null;
+  }
+
+  private getProjectMediaIndicesByFrame(
+    project: ProjectItem,
+    frame: ProjectMediaFrame,
+  ): number[] {
+    return project.media.reduce<number[]>((indices, mediaItem, index) => {
+      if (mediaItem.frame === frame) {
+        indices.push(index);
+      }
+
+      return indices;
+    }, []);
+  }
+
+  private getDefaultProjectMediaIndex(project: ProjectItem): number {
+    if (!project.media.length) {
+      return 0;
+    }
+
+    const preferredFrame = this.getProjectPreferredMediaFrame(project);
+    const activeIndex = this.activeProjectMediaIndex[project.title];
+
+    if (preferredFrame) {
+      const frameIndices = this.getProjectMediaIndicesByFrame(project, preferredFrame);
+      if (frameIndices.length) {
+        if (
+          activeIndex !== undefined &&
+          activeIndex >= 0 &&
+          activeIndex < project.media.length &&
+          project.media[activeIndex]?.frame === preferredFrame
+        ) {
+          return activeIndex;
+        }
+
+        const initialIndex = project.initialMediaIndex;
+        if (
+          initialIndex !== undefined &&
+          initialIndex >= 0 &&
+          initialIndex < project.media.length &&
+          project.media[initialIndex]?.frame === preferredFrame
+        ) {
+          return initialIndex;
+        }
+
+        return frameIndices[0] ?? 0;
+      }
+    }
+
+    const nextIndex = activeIndex ?? project.initialMediaIndex ?? 0;
+    return Math.min(Math.max(nextIndex, 0), project.media.length - 1);
+  }
+
   getActiveProjectMedia(project: ProjectItem): ProjectMediaItem | null {
     if (!project.media.length) {
       return null;
     }
 
-    const nextIndex = this.activeProjectMediaIndex[project.title] ?? project.initialMediaIndex ?? 0;
+    const nextIndex = this.getDefaultProjectMediaIndex(project);
     return project.media[nextIndex] ?? project.media[0] ?? null;
   }
 
@@ -958,13 +1082,24 @@ export class App implements AfterViewInit, OnDestroy {
       return 0;
     }
 
-    const nextIndex = this.activeProjectMediaIndex[project.title] ?? project.initialMediaIndex ?? 0;
-    return Math.min(Math.max(nextIndex, 0), project.media.length - 1);
+    return this.getDefaultProjectMediaIndex(project);
   }
 
   nextProjectMedia(project: ProjectItem): void {
     if (!project.media.length) {
       return;
+    }
+
+    const preferredFrame = this.getProjectPreferredMediaFrame(project);
+    if (preferredFrame) {
+      const frameIndices = this.getProjectMediaIndicesByFrame(project, preferredFrame);
+      if (frameIndices.length > 1) {
+        const currentIndex = this.getProjectMediaIndex(project);
+        const currentFramePosition = frameIndices.indexOf(currentIndex);
+        const nextFramePosition = (currentFramePosition + 1) % frameIndices.length;
+        this.activeProjectMediaIndex[project.title] = frameIndices[nextFramePosition] ?? frameIndices[0] ?? currentIndex;
+        return;
+      }
     }
 
     const nextIndex = (this.getProjectMediaIndex(project) + 1) % project.media.length;
@@ -976,6 +1111,19 @@ export class App implements AfterViewInit, OnDestroy {
       return;
     }
 
+    const preferredFrame = this.getProjectPreferredMediaFrame(project);
+    if (preferredFrame) {
+      const frameIndices = this.getProjectMediaIndicesByFrame(project, preferredFrame);
+      if (frameIndices.length > 1) {
+        const currentIndex = this.getProjectMediaIndex(project);
+        const currentFramePosition = frameIndices.indexOf(currentIndex);
+        const prevFramePosition =
+          (currentFramePosition - 1 + frameIndices.length) % frameIndices.length;
+        this.activeProjectMediaIndex[project.title] = frameIndices[prevFramePosition] ?? frameIndices[0] ?? currentIndex;
+        return;
+      }
+    }
+
     const nextIndex =
       (this.getProjectMediaIndex(project) - 1 + project.media.length) % project.media.length;
     this.activeProjectMediaIndex[project.title] = nextIndex;
@@ -983,22 +1131,6 @@ export class App implements AfterViewInit, OnDestroy {
 
   getProjectPreviewBadges(project: ProjectItem): string[] {
     return project.badges.slice(0, 3);
-  }
-
-  getMobileProjectTab(project: ProjectItem): MobileProjectTab {
-    return this.activeMobileProjectTab[project.title] ?? (project.media.length > 0 ? 'screens' : 'overview');
-  }
-
-  setMobileProjectTab(project: ProjectItem, tab: MobileProjectTab): void {
-    this.activeMobileProjectTab[project.title] = tab;
-  }
-
-  getMobileProjectPrimaryImpact(project: ProjectItem): string {
-    return project.impactMetrics[0] ?? project.impact;
-  }
-
-  getMobileProjectSecondaryImpact(project: ProjectItem): string {
-    return project.impactMetrics[1] ?? project.scope;
   }
 
   getActiveMobileDeviceFrame(project: ProjectItem): ProjectMediaItem['frame'] {
@@ -1019,6 +1151,79 @@ export class App implements AfterViewInit, OnDestroy {
     return remainingCount > 0
       ? `${baseBadges.join(' / ')} +${remainingCount}`
       : baseBadges.join(' / ');
+  }
+
+  getProjectAccessLabel(project: ProjectItem): string {
+    if (project.proofLinks.some((link) => link.kind === 'live')) {
+      return 'Live';
+    }
+
+    if (project.proofLinks.length > 0) {
+      return 'External Proof';
+    }
+
+    return project.media.length > 0 ? 'Private Screens' : 'Private Build';
+  }
+
+  getProjectCaseEntries(project: ProjectItem): Array<{ label: string; value: string }> {
+    return [
+      { label: 'Problem', value: project.description },
+      { label: 'What I built', value: project.buildSummary },
+      { label: 'Result', value: project.result },
+    ];
+  }
+
+  getProjectSignalEntries(project: ProjectItem): Array<{ label: string; value: string }> {
+    return [
+      { label: 'Role', value: project.role },
+      { label: 'Stack', value: this.getProjectStackSummary(project) },
+      { label: 'Timeline', value: project.timeline },
+      { label: 'Status', value: project.stage },
+      { label: 'Access', value: this.getProjectAccessLabel(project) },
+    ];
+  }
+
+  onMediaImageLoad(src: string): void {
+    if (!src) {
+      return;
+    }
+
+    this.loadedMediaSources.add(src);
+  }
+
+  isMediaLoaded(src: string): boolean {
+    return this.loadedMediaSources.has(src);
+  }
+
+  private preloadMediaSources(sources: Array<string | null | undefined>): void {
+    if (typeof Image === 'undefined') {
+      return;
+    }
+
+    for (const src of sources) {
+      if (!src || this.preloadedMediaSources.has(src)) {
+        continue;
+      }
+
+      const image = new Image();
+      image.decoding = 'async';
+      image.src = src;
+      image.onload = () => this.onMediaImageLoad(src);
+      this.preloadedMediaSources.add(src);
+    }
+  }
+
+  private preloadProjectGalleryAdjacentMedia(): void {
+    const media = this.galleryProjectMedia;
+    if (media.length <= 1) {
+      return;
+    }
+
+    const activeIndex = this.getGalleryMediaIndex();
+    const prevIndex = (activeIndex - 1 + media.length) % media.length;
+    const nextIndex = (activeIndex + 1) % media.length;
+
+    this.preloadMediaSources([media[prevIndex]?.src, media[nextIndex]?.src]);
   }
 
   getProjectMediaStyle(
@@ -1173,6 +1378,8 @@ export class App implements AfterViewInit, OnDestroy {
     this.projectGalleryFrameFilter = availableFrames.length > 1 ? frame : null;
     this.projectGalleryActiveIndex = 0;
     this.isGalleryZoomed = false;
+    this.preloadProjectGalleryAdjacentMedia();
+    this.scheduleGalleryRailSync(false);
   }
 
   shouldShowGalleryRail(): boolean {
@@ -1263,19 +1470,26 @@ export class App implements AfterViewInit, OnDestroy {
 
     this.projectGalleryActiveIndex = index;
     this.isGalleryZoomed = false;
+    this.preloadProjectGalleryAdjacentMedia();
+    this.scheduleGalleryRailSync();
   }
 
   openProjectGallery(
     project: ProjectItem,
-    index = 0,
+    index?: number,
     frameFilter: ProjectMediaItem['frame'] | null = null,
   ): void {
     if (!project.media.length) {
       return;
     }
 
+    const targetIndex = index ?? this.getProjectMediaIndex(project);
     this.projectGalleryProject = project;
-    this.projectGalleryFrameFilter = this.resolveProjectGalleryFrameFilter(project, index, frameFilter);
+    this.projectGalleryFrameFilter = this.resolveProjectGalleryFrameFilter(
+      project,
+      targetIndex,
+      frameFilter,
+    );
 
     const media = this.galleryProjectMedia;
     if (!media.length) {
@@ -1283,19 +1497,21 @@ export class App implements AfterViewInit, OnDestroy {
     }
 
     if (frameFilter) {
-      const targetMedia = project.media[index] ?? null;
+      const targetMedia = project.media[targetIndex] ?? null;
       const filteredIndex = targetMedia
         ? media.findIndex((mediaItem) => mediaItem.src === targetMedia.src)
         : 0;
       this.projectGalleryActiveIndex = filteredIndex >= 0 ? filteredIndex : 0;
     } else {
-      this.projectGalleryActiveIndex = Math.min(Math.max(index, 0), media.length - 1);
+      this.projectGalleryActiveIndex = Math.min(Math.max(targetIndex, 0), media.length - 1);
     }
 
-    this.setActiveProjectMedia(project, index);
+    this.setActiveProjectMedia(project, targetIndex);
     this.isProjectGalleryOpen = true;
     this.isGalleryZoomed = false;
+    this.preloadProjectGalleryAdjacentMedia();
     this.syncBodyScrollLock();
+    this.scheduleGalleryRailSync(false);
   }
 
   closeProjectGallery(): void {
@@ -1306,6 +1522,7 @@ export class App implements AfterViewInit, OnDestroy {
     this.isGalleryZoomed = false;
     this.galleryTouchStartX = null;
     this.galleryTouchStartY = null;
+    this.cancelGalleryRailSync();
     this.syncBodyScrollLock();
   }
 
@@ -1317,6 +1534,8 @@ export class App implements AfterViewInit, OnDestroy {
 
     this.projectGalleryActiveIndex = (this.getGalleryMediaIndex() + 1) % media.length;
     this.isGalleryZoomed = false;
+    this.preloadProjectGalleryAdjacentMedia();
+    this.scheduleGalleryRailSync();
   }
 
   prevOpenProjectGalleryMedia(): void {
@@ -1328,6 +1547,8 @@ export class App implements AfterViewInit, OnDestroy {
     this.projectGalleryActiveIndex =
       (this.getGalleryMediaIndex() - 1 + media.length) % media.length;
     this.isGalleryZoomed = false;
+    this.preloadProjectGalleryAdjacentMedia();
+    this.scheduleGalleryRailSync();
   }
 
   toggleGalleryZoom(): void {
@@ -1420,16 +1641,59 @@ export class App implements AfterViewInit, OnDestroy {
     this.expandedExperienceRoles.add(role);
   }
 
-  getExperienceHighlights(exp: ExperienceItem): string[] {
-    if (this.isExperienceExpanded(exp.role)) {
-      return exp.highlights;
+  getExperienceTrackLabel(track: ExperienceTrack): string {
+    switch (track) {
+      case 'contract':
+        return 'Contract';
+      case 'freelance':
+        return 'Freelance';
+      default:
+        return 'Internship';
+    }
+  }
+
+  getExperienceCaseEntries(exp: ExperienceItem): Array<{ label: string; value: string }> {
+    return [
+      { label: 'Context', value: exp.context },
+      { label: 'Owned', value: exp.owned },
+      { label: 'Impact', value: exp.impact },
+    ];
+  }
+
+  getExperienceBadgePreview(exp: ExperienceItem): string[] {
+    return exp.badges.slice(0, 4);
+  }
+
+  getExperienceBadgeOverflowCount(exp: ExperienceItem): number {
+    return Math.max(exp.badges.length - this.getExperienceBadgePreview(exp).length, 0);
+  }
+
+  getExperienceSelectedOutcomes(exp: ExperienceItem): string[] {
+    return exp.selectedOutcomes.slice(0, 2);
+  }
+
+  getExperienceTechnicalDetails(exp: ExperienceItem): string[] {
+    return exp.technicalDetails;
+  }
+
+  openExperienceRelatedProject(projectTitle: string): void {
+    const project = this.projects.find((item) => item.title === projectTitle) ?? null;
+    this.setActive('projects');
+
+    if (project?.media.length) {
+      this.openProjectGallery(project, project.initialMediaIndex ?? 0);
+      return;
     }
 
-    return exp.highlights.slice(0, this.collapsedHighlightCount);
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   shouldShowExperienceToggle(exp: ExperienceItem): boolean {
-    return exp.highlights.length > this.collapsedHighlightCount;
+    return exp.technicalDetails.length > 0;
   }
 
   toggleMobileMenu(): void {
@@ -1565,6 +1829,7 @@ export class App implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.setupScrollReveal();
+    this.lastRevealViewportMode = this.getRevealViewportMode();
     this.startCatFrameLoop();
     this.scheduleHomeHashTopLock();
     this.scheduleFirstVisitChatOpen();
@@ -1605,6 +1870,7 @@ export class App implements AfterViewInit, OnDestroy {
     if (typeof document !== 'undefined') {
       document.body.style.overflow = '';
     }
+    this.cancelGalleryRailSync();
   }
 
   @HostListener('document:keydown.escape')
@@ -1634,13 +1900,63 @@ export class App implements AfterViewInit, OnDestroy {
       this.isPhotoRevealed = false;
     }
 
+    const nextRevealViewportMode = this.getRevealViewportMode();
+    if (nextRevealViewportMode !== this.lastRevealViewportMode) {
+      this.lastRevealViewportMode = nextRevealViewportMode;
+      this.refreshRevealAfterFilterChange();
+    }
+
     this.cacheTrackedSections();
     this.updateActiveSectionFromViewport();
+
+    if (this.isProjectGalleryOpen) {
+      this.scheduleGalleryRailSync(false);
+    }
   }
 
   @HostListener('window:scroll')
   onWindowScroll(): void {
     this.updateActiveSectionFromViewport();
+  }
+
+  private scheduleGalleryRailSync(animate = true): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    this.cancelGalleryRailSync();
+
+    this.galleryRailSyncFrame = window.requestAnimationFrame(() => {
+      this.galleryRailSyncFrame = window.requestAnimationFrame(() => {
+        this.galleryRailSyncFrame = null;
+        this.syncActiveGalleryThumbIntoView(animate);
+      });
+    });
+  }
+
+  private cancelGalleryRailSync(): void {
+    if (this.galleryRailSyncFrame === null || typeof window === 'undefined') {
+      return;
+    }
+
+    window.cancelAnimationFrame(this.galleryRailSyncFrame);
+    this.galleryRailSyncFrame = null;
+  }
+
+  private syncActiveGalleryThumbIntoView(animate = true): void {
+    const railEl = this.projectGalleryRailEl?.nativeElement;
+    const thumbEls = this.projectGalleryThumbEls?.toArray() ?? [];
+    const activeThumbEl = thumbEls[this.getGalleryMediaIndex()]?.nativeElement;
+
+    if (!railEl || !activeThumbEl) {
+      return;
+    }
+
+    activeThumbEl.scrollIntoView({
+      behavior: animate ? 'smooth' : 'auto',
+      block: 'nearest',
+      inline: 'center',
+    });
   }
 
   private cacheTrackedSections(): void {
@@ -1822,6 +2138,10 @@ export class App implements AfterViewInit, OnDestroy {
     return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   }
 
+  private getRevealViewportMode(): 'mobile' | 'desktop' {
+    return typeof window !== 'undefined' && window.innerWidth <= 620 ? 'mobile' : 'desktop';
+  }
+
   private setupScrollReveal(): void {
     const revealItems = Array.from(document.querySelectorAll<HTMLElement>('.reveal'));
     if (!revealItems.length) {
@@ -1839,7 +2159,11 @@ export class App implements AfterViewInit, OnDestroy {
       (entries) => {
         for (const entry of entries) {
           const target = entry.target as HTMLElement;
-          if (entry.intersectionRatio > 0.16) {
+          const isLargeRevealBlock =
+            typeof window !== 'undefined' &&
+            target.getBoundingClientRect().height > window.innerHeight * 1.1;
+
+          if (entry.intersectionRatio > 0.16 || (entry.isIntersecting && isLargeRevealBlock)) {
             target.classList.add('in-view');
           } else {
             target.classList.remove('in-view');
@@ -2116,4 +2440,3 @@ export class App implements AfterViewInit, OnDestroy {
     }
   }
 }
-

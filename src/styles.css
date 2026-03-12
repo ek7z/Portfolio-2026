@@ -594,6 +594,740 @@ body.paper-dark app-root .chat-msg-cta {
   box-shadow: 1px 1px 0 #101722;
 }
 
+body.paper-dark app-root :is(.project-gallery-overlay, .resume-overlay) {
+  background: rgb(1 6 12 / 0.74);
+  backdrop-filter: blur(10px);
+}
+
+body.paper-dark app-root :is(.project-gallery-modal, .resume-modal) {
+  background: #fffef8 !important;
+  color: #121212;
+  border-color: #101722;
+  box-shadow:
+    0 24px 56px rgb(0 0 0 / 0.38),
+    7px 7px 0 #070c14;
+}
+
+body.paper-dark app-root :is(.project-gallery-head, .resume-head) {
+  background: linear-gradient(180deg, rgb(255 254 248 / 0.98) 0%, rgb(250 246 236 / 0.96) 100%) !important;
+  color: #121212;
+  border-color: #101722;
+}
+
+body.paper-dark app-root :is(.project-gallery-meta h3, .resume-meta p, .resume-meta h3) {
+  color: #121212 !important;
+}
+
+body.paper-dark app-root .project-gallery-frame-switcher {
+  background: #f6f2e8;
+  border-color: #101722;
+  box-shadow: 1px 1px 0 #101722;
+}
+
+body.paper-dark app-root .project-gallery-frame-tab {
+  color: rgb(18 18 18 / 0.72);
+}
+
+body.paper-dark app-root .project-gallery-frame-tab.is-active {
+  background: #fffef8;
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 1px 1px 0 #101722;
+}
+
+body.paper-dark app-root .project-gallery-stage {
+  background: linear-gradient(180deg, #f4f8fc 0%, #ffffff 100%);
+  border-color: #101722;
+}
+
+body.paper-dark app-root .project-gallery-thumb {
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  border-color: #101722;
+  box-shadow: 1px 1px 0 #101722;
+}
+
+body.paper-dark app-root .project-gallery-thumb.is-active {
+  background: #fffef8;
+  box-shadow:
+    0 0 0 2px rgb(13 153 196 / 0.14),
+    3px 3px 0 #101722;
+}
+
+body.paper-dark app-root .project-gallery-dots.is-overlay {
+  background: rgb(19 27 39 / 0.7);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+}
+
+body.paper-dark app-root .project-gallery-dot {
+  background: #25344d;
+  border-color: #f3ecdf;
+}
+
+body.paper-dark app-root .project-gallery-dot.is-active {
+  background: #8debf4;
+  border-color: #101722;
+}
+
+body.paper-dark app-root .project-gallery-sheet-handle {
+  background: rgb(18 18 18 / 0.18);
+}
+
+body.paper-dark app-root .project-gallery-close-icon {
+  color: #121212;
+}
+
+@media (min-width: 721px) {
+  body.paper-dark app-root .project-gallery-overlay {
+    background:
+      radial-gradient(circle at top, rgb(24 41 68 / 0.28), transparent 32%),
+      rgb(2 7 14 / 0.82);
+    backdrop-filter: blur(14px);
+  }
+
+  body.paper-dark app-root .project-gallery-modal {
+    width: min(1180px, 92vw);
+    background: linear-gradient(180deg, #141c2b 0%, #111927 100%) !important;
+    color: #f5efe4;
+    border-color: #f3ecdf;
+    box-shadow:
+      0 30px 80px rgb(0 0 0 / 0.46),
+      8px 8px 0 #03070d;
+  }
+
+  body.paper-dark app-root .project-gallery-head {
+    background: linear-gradient(180deg, rgb(21 30 45 / 0.98) 0%, rgb(16 24 37 / 0.94) 100%) !important;
+    border-bottom: 1px solid rgb(243 236 223 / 0.14);
+    box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.03);
+  }
+
+  body.paper-dark app-root .project-gallery-meta h3 {
+    color: #f5efe4 !important;
+  }
+
+  body.paper-dark app-root .project-gallery-frame-switcher {
+    background: linear-gradient(180deg, #101827 0%, #131d2c 100%);
+    border-color: #324866;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  }
+
+  body.paper-dark app-root .project-gallery-frame-tab {
+    color: rgb(243 236 223 / 0.7);
+  }
+
+  body.paper-dark app-root .project-gallery-frame-tab.is-active {
+    background: #8debf4;
+    color: #101722;
+    border-color: #101722;
+    box-shadow: 1px 1px 0 #101722;
+  }
+
+  body.paper-dark app-root .project-gallery-stage {
+    background: linear-gradient(180deg, #dde8f6 0%, #eef5fb 100%);
+    border-color: #f3ecdf;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  }
+
+  body.paper-dark app-root .project-gallery-rail {
+    padding: 0.35rem;
+    border: 1px solid rgb(243 236 223 / 0.14);
+    border-radius: 20px;
+    background: linear-gradient(180deg, #0f1624 0%, #111b2c 100%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  }
+
+  body.paper-dark app-root .project-gallery-thumb {
+    background: linear-gradient(180deg, #182334 0%, #121b2a 100%);
+    border-color: #324866;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.03);
+  }
+
+  body.paper-dark app-root .project-gallery-thumb img {
+    opacity: 0.92;
+  }
+
+  body.paper-dark app-root .project-gallery-thumb.is-active {
+    background: linear-gradient(180deg, #20314a 0%, #162338 100%);
+    border-color: #8debf4;
+    box-shadow:
+      0 0 0 2px rgb(141 235 244 / 0.18),
+      0 10px 22px rgb(0 0 0 / 0.26);
+  }
+
+  body.paper-dark app-root .project-gallery-thumb.is-active img {
+    opacity: 1;
+    outline: 2px solid rgb(141 235 244 / 0.35);
+  }
+
+  body.paper-dark app-root .project-gallery-actions .project-nav-btn {
+    background: #162033;
+    color: #f5efe4;
+    border-color: #324866;
+    box-shadow: 2px 2px 0 #070c14;
+  }
+
+  body.paper-dark app-root .project-gallery-actions .project-nav-btn:hover {
+    background: #20314a;
+  }
+
+  body.paper-dark app-root .project-gallery-close-btn {
+    background: #ff99b6;
+    color: #121212;
+    border-color: #101722;
+    box-shadow: 2px 2px 0 #070c14;
+  }
+
+  body.paper-dark app-root .project-gallery-close-icon {
+    color: #121212;
+  }
+
+  body.paper-dark app-root .project-gallery-dots.is-overlay {
+    background: rgb(10 15 24 / 0.78);
+    border: 1px solid rgb(243 236 223 / 0.14);
+  }
+
+  body.paper-dark app-root .project-gallery-dot {
+    background: #2f4462;
+    border-color: #d7ddea;
+  }
+
+  body.paper-dark app-root .project-gallery-dot.is-active {
+    background: #8debf4;
+    border-color: #101722;
+  }
+}
+
+body.paper-dark app-root .experience-support-card {
+  background: #f4efe5;
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 7px 7px 0 #070c14;
+}
+
+body.paper-dark app-root .experience-support-card > .section-title h2,
+body.paper-dark app-root .experience-support-card > .section-title h3 {
+  color: #121212;
+}
+
+body.paper-dark app-root .timeline-item {
+  background:
+    radial-gradient(circle at top right, rgb(141 235 244 / 0.16), transparent 34%),
+    linear-gradient(180deg, #f6f0e5 0%, #edf5fb 100%) !important;
+  color: #121212;
+  border-color: #101722;
+}
+
+body.paper-dark app-root .timeline-head h3,
+body.paper-dark app-root .timeline-company,
+body.paper-dark app-root .timeline-points li,
+body.paper-dark app-root .exp-related-link,
+body.paper-dark app-root .exp-related-link.is-static {
+  color: #121212;
+}
+
+body.paper-dark app-root :is(
+  .project-hero-visual,
+  .project-device-feature-stage,
+  .project-mobile-preview-shell,
+  .project-mobile-device-board
+) {
+  background: linear-gradient(180deg, #f4efe5 0%, #eaf2fb 100%);
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 4px 4px 0 #070c14;
+}
+
+body.paper-dark app-root .project-screen-frame {
+  background: #f7f3ea;
+  border-color: #101722;
+  box-shadow: 2px 2px 0 #070c14;
+}
+
+body.paper-dark app-root .project-screen-topbar {
+  background: #efe7d6;
+  border-bottom-color: #101722;
+}
+
+body.paper-dark app-root :is(
+  .project-case-item,
+  .project-proof-signal,
+  .timeline-period-card,
+  .exp-proof-signal,
+  .exp-case-card,
+  .timeline-outcome-block,
+  .timeline-block-label,
+  .project-showcase-kicker,
+  .project-showcase-label,
+  .featured-gallery-btn,
+  .project-nav-btn,
+  .project-device-kicker,
+  .project-mobile-device-toggle
+) {
+  color: #121212;
+  border-color: #101722;
+  box-shadow: 2px 2px 0 #070c14;
+}
+
+body.paper-dark app-root :is(
+  .project-case-item p,
+  .project-proof-signal strong,
+  .exp-case-card p,
+  .exp-proof-signal strong,
+  .timeline-period-card strong,
+  .timeline-block-label,
+  .cert-stat-card strong,
+  .featured-gallery-btn,
+  .project-nav-btn,
+  .project-device-kicker,
+  .project-mobile-device-toggle,
+  .project-showcase-label
+) {
+  color: #121212;
+}
+
+body.paper-dark app-root :is(
+  .project-case-label,
+  .project-proof-signal-label,
+  .exp-case-label,
+  .exp-proof-signal span,
+  .timeline-rail-label,
+  .cert-stat-card span,
+  .project-showcase-kicker
+) {
+  color: rgb(18 18 18 / 0.72);
+  opacity: 1;
+}
+
+body.paper-dark app-root :is(
+  .project-hero-screenbar,
+  .project-mobile-preview-controls,
+  .project-mobile-action-row
+) {
+  color: #121212;
+}
+
+body.paper-dark app-root .timeline-item.is-current {
+  background:
+    radial-gradient(circle at top right, rgb(135 246 255 / 0.18), transparent 34%),
+    linear-gradient(180deg, #f8f3e8 0%, #eef8ff 100%) !important;
+}
+
+body.paper-dark app-root .timeline-company {
+  color: rgb(18 18 18 / 0.62);
+}
+
+body.paper-dark app-root .timeline-rail-label,
+body.paper-dark app-root .timeline-points li,
+body.paper-dark app-root .exp-related-link,
+body.paper-dark app-root .exp-related-link.is-static {
+  color: #121212 !important;
+}
+
+body.paper-dark app-root .timeline-track-pill,
+body.paper-dark app-root .timeline-current-pill,
+body.paper-dark app-root .timeline-period-card,
+body.paper-dark app-root .exp-proof-signal,
+body.paper-dark app-root .exp-case-card,
+body.paper-dark app-root .timeline-outcome-block,
+body.paper-dark app-root .timeline-block-label,
+body.paper-dark app-root .exp-related-link,
+body.paper-dark app-root .exp-related-link.is-static {
+  border-color: #101722 !important;
+  box-shadow: 2px 2px 0 #070c14 !important;
+}
+
+body.paper-dark app-root .exp-related-link,
+body.paper-dark app-root .exp-related-link.is-static {
+  background: #fffef8 !important;
+}
+
+body.paper-dark app-root .exp-related-link:hover {
+  background: #ffe07a !important;
+}
+
+body.paper-dark app-root .cert-item {
+  background: #162033 !important;
+  border-color: #101722 !important;
+  box-shadow: 2px 2px 0 #070c14 !important;
+}
+
+body.paper-dark app-root .cert-title,
+body.paper-dark app-root .cert-meta,
+body.paper-dark app-root .cert-copy {
+  color: #f5efe4 !important;
+}
+
+body.paper-dark app-root .cert-mark {
+  background: #25344d !important;
+  color: #fff7de !important;
+  border-color: #f3ecdf !important;
+  box-shadow: 1px 1px 0 #070c14 !important;
+}
+
+@media (min-width: 721px) {
+  body.paper-dark app-root .experience-panel,
+  body.paper-dark app-root #projects.panel {
+    background: linear-gradient(180deg, #111929 0%, #132033 100%);
+  }
+
+  body.paper-dark app-root .experience-panel .filter-chip {
+    background: #162033;
+    color: #f5efe4;
+    border-color: #324866;
+    box-shadow: 2px 2px 0 #070c14;
+  }
+
+  body.paper-dark app-root .experience-panel .filter-chip.is-active {
+    background: linear-gradient(180deg, #5f4f22 0%, #483b19 100%);
+    color: #fff3cc;
+    border-color: #a58a38;
+  }
+
+  body.paper-dark app-root .exp-summary .exp-stat-card,
+  body.paper-dark app-root .experience-support-card .cert-stat-card {
+    color: #f5efe4;
+    border-color: #324866;
+    box-shadow: 2px 2px 0 #070c14;
+  }
+
+  body.paper-dark app-root .exp-summary .exp-stat-card span,
+  body.paper-dark app-root .experience-support-card .cert-stat-card span {
+    color: rgb(245 239 228 / 0.66);
+  }
+
+  body.paper-dark app-root .exp-summary .exp-stat-card strong,
+  body.paper-dark app-root .experience-support-card .cert-stat-card strong {
+    color: #f5efe4;
+  }
+
+  body.paper-dark app-root .exp-summary .exp-stat-card.tone-yellow,
+  body.paper-dark app-root .experience-support-card .cert-stat-card.tone-yellow {
+    background: linear-gradient(180deg, #4b401d 0%, #342b13 100%);
+    border-color: #8a7533;
+  }
+
+  body.paper-dark app-root .exp-summary .exp-stat-card.tone-cyan,
+  body.paper-dark app-root .experience-support-card .cert-stat-card.tone-cyan {
+    background: linear-gradient(180deg, #173b47 0%, #112a33 100%);
+    border-color: #468a95;
+  }
+
+  body.paper-dark app-root .exp-summary .exp-stat-card.tone-pink,
+  body.paper-dark app-root .experience-support-card .cert-stat-card.tone-pink {
+    background: linear-gradient(180deg, #4a2938 0%, #341d28 100%);
+    border-color: #8e5870;
+  }
+
+  body.paper-dark app-root .experience-support-card {
+    background: linear-gradient(180deg, #151f2f 0%, #121b2a 100%);
+    color: #f5efe4;
+    border-color: #324866;
+    box-shadow: 7px 7px 0 #03070d;
+  }
+
+  body.paper-dark app-root .experience-support-card > .section-title h2,
+  body.paper-dark app-root .experience-support-card > .section-title h3 {
+    color: #f5efe4;
+  }
+
+  body.paper-dark app-root .cert-note-list li {
+    background: linear-gradient(180deg, #182334 0%, #121b2a 100%);
+    color: #f5efe4;
+    border-color: #324866;
+    box-shadow: 1px 1px 0 #070c14;
+  }
+
+  body.paper-dark app-root .cert-application .cert-note-list li,
+  body.paper-dark app-root .cert-application .cert-note-list li * {
+    color: #f5efe4 !important;
+  }
+
+  body.paper-dark app-root .cert-application .cert-note-list li::before {
+    background: #ffe07a !important;
+    border-color: #101722 !important;
+  }
+
+  body.paper-dark app-root .cert-item {
+    background: linear-gradient(180deg, #162133 0%, #121b2a 100%) !important;
+    border-color: #324866 !important;
+    box-shadow: 2px 2px 0 #070c14 !important;
+  }
+
+  body.paper-dark app-root .cert-title,
+  body.paper-dark app-root .cert-copy {
+    color: #f5efe4 !important;
+  }
+
+  body.paper-dark app-root .cert-meta {
+    color: rgb(245 239 228 / 0.68) !important;
+  }
+
+  body.paper-dark app-root .timeline-item {
+    background:
+      radial-gradient(circle at top right, rgb(141 235 244 / 0.1), transparent 34%),
+      linear-gradient(180deg, #182335 0%, #131c2b 100%) !important;
+    color: #f5efe4;
+    border-color: #324866;
+    box-shadow: 4px 4px 0 #03070d;
+  }
+
+  body.paper-dark app-root .timeline-item.is-current {
+    background:
+      radial-gradient(circle at top right, rgb(141 235 244 / 0.15), transparent 34%),
+      linear-gradient(180deg, #1c2b42 0%, #152134 100%) !important;
+  }
+
+  body.paper-dark app-root .timeline-rail::before {
+    background: rgb(243 236 223 / 0.16);
+  }
+
+  body.paper-dark app-root .timeline-head h3,
+  body.paper-dark app-root .timeline-points li,
+  body.paper-dark app-root .exp-related-link,
+  body.paper-dark app-root .exp-related-link.is-static,
+  body.paper-dark app-root .timeline-toggle {
+    color: #f5efe4 !important;
+  }
+
+  body.paper-dark app-root .timeline-company {
+    color: rgb(245 239 228 / 0.64) !important;
+  }
+
+  body.paper-dark app-root :is(
+    .timeline-rail-label,
+    .exp-proof-signal span,
+    .exp-case-label,
+    .project-case-label,
+    .project-proof-signal-label
+  ) {
+    color: rgb(245 239 228 / 0.6) !important;
+    opacity: 1;
+  }
+
+  body.paper-dark app-root :is(
+    .timeline-period-card strong,
+    .exp-proof-signal strong,
+    .exp-case-card p,
+    .timeline-block-label,
+    .project-case-item p,
+    .project-proof-signal strong
+  ) {
+    color: #f5efe4 !important;
+  }
+
+  body.paper-dark app-root :is(
+    .timeline-period-card,
+    .exp-proof-signal,
+    .exp-case-card,
+    .timeline-outcome-block,
+    .timeline-block-label,
+    .exp-related-link,
+    .exp-related-link.is-static,
+    .timeline-toggle
+  ) {
+    background: linear-gradient(180deg, #172235 0%, #121b2a 100%) !important;
+    color: #f5efe4 !important;
+    border-color: #324866 !important;
+    box-shadow: 2px 2px 0 #070c14 !important;
+  }
+
+  body.paper-dark app-root .exp-case-card:last-child,
+  body.paper-dark app-root .timeline-outcome-block.is-primary {
+    background:
+      radial-gradient(circle at top right, rgb(255 224 122 / 0.12), transparent 32%),
+      linear-gradient(180deg, #1a2435 0%, #121b2a 100%) !important;
+  }
+
+  body.paper-dark app-root .timeline-outcome-block.is-secondary {
+    background:
+      radial-gradient(circle at top right, rgb(141 235 244 / 0.12), transparent 32%),
+      linear-gradient(180deg, #18263a 0%, #122031 100%) !important;
+  }
+
+  body.paper-dark app-root .timeline-block-label {
+    background: #223047 !important;
+  }
+
+  body.paper-dark app-root .timeline-points li::before {
+    background: #ffe07a;
+    border-color: #101722;
+  }
+
+  body.paper-dark app-root .exp-badges span {
+    background: #1b2739;
+    color: #f5efe4;
+    border-color: #324866;
+    box-shadow: 1px 1px 0 #070c14;
+  }
+
+  body.paper-dark app-root .exp-badge-more {
+    background: #223047;
+  }
+
+  body.paper-dark app-root .timeline-track-pill[data-track='contract'] {
+    background: #5a471b;
+    color: #fff2cb;
+    border-color: #a28536;
+  }
+
+  body.paper-dark app-root .timeline-track-pill[data-track='freelance'] {
+    background: #50411a;
+    color: #fff2cb;
+    border-color: #947c33;
+  }
+
+  body.paper-dark app-root .timeline-track-pill[data-track='internship'] {
+    background: #173844;
+    color: #e8fcff;
+    border-color: #4e94a0;
+  }
+
+  body.paper-dark app-root .timeline-current-pill {
+    background: #28472a;
+    color: #efffe6;
+    border-color: #6aa357;
+  }
+
+  body.paper-dark app-root .exp-related-link:hover,
+  body.paper-dark app-root .timeline-toggle:hover {
+    background: #223149 !important;
+    box-shadow: 3px 3px 0 #070c14 !important;
+  }
+
+  body.paper-dark app-root .project-intro-bar p {
+    color: #f5efe4;
+  }
+
+  body.paper-dark app-root :is(.project-hero-card, .project-device-feature, .project-showcase-card, .project-note-compact) {
+    background: linear-gradient(180deg, #121b2a 0%, #101827 100%);
+  }
+
+  body.paper-dark app-root .project-case-item {
+    background: linear-gradient(180deg, #182335 0%, #121b2a 100%);
+    color: #f5efe4;
+    border-color: #324866;
+    box-shadow: 2px 2px 0 #070c14;
+  }
+
+  body.paper-dark app-root .project-case-item:nth-child(3n + 1) {
+    background:
+      radial-gradient(circle at top right, rgb(141 235 244 / 0.1), transparent 34%),
+      linear-gradient(180deg, #182335 0%, #121b2a 100%);
+  }
+
+  body.paper-dark app-root .project-case-item:nth-child(3n + 2) {
+    background:
+      radial-gradient(circle at top right, rgb(255 224 122 / 0.1), transparent 34%),
+      linear-gradient(180deg, #1b2535 0%, #131b28 100%);
+  }
+
+  body.paper-dark app-root .project-case-item:nth-child(3n + 3) {
+    background:
+      radial-gradient(circle at top right, rgb(248 169 197 / 0.1), transparent 34%),
+      linear-gradient(180deg, #1b2434 0%, #131b29 100%);
+  }
+
+  body.paper-dark app-root .project-case-item p,
+  body.paper-dark app-root .project-proof-signal strong {
+    color: #f5efe4;
+  }
+
+  body.paper-dark app-root .project-proof-signal {
+    background: linear-gradient(180deg, #172235 0%, #121b2a 100%);
+    color: #f5efe4;
+    border-color: #324866;
+    box-shadow: 2px 2px 0 #070c14;
+  }
+
+  body.paper-dark app-root .project-proof-signal:nth-child(5n + 2) {
+    background: linear-gradient(180deg, #1a2639 0%, #132031 100%);
+  }
+
+  body.paper-dark app-root .project-proof-signal:nth-child(5n + 4) {
+    background: linear-gradient(180deg, #1b2536 0%, #141e2d 100%);
+  }
+
+  body.paper-dark app-root :is(
+    .project-hero-visual,
+    .project-device-feature-stage,
+    .project-mobile-preview-shell,
+    .project-mobile-device-board,
+    .project-showcase,
+    .project-showcase-preview
+  ) {
+    background: linear-gradient(180deg, #141e2d 0%, #101827 100%);
+    color: #f5efe4;
+    border-color: #324866;
+    box-shadow: 4px 4px 0 #03070d;
+  }
+
+  body.paper-dark app-root .project-screen-frame {
+    background: #101827;
+    border-color: #324866;
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.04),
+      2px 2px 0 #070c14;
+  }
+
+  body.paper-dark app-root .project-screen-topbar {
+    background: #172236;
+    border-bottom-color: #324866;
+  }
+
+  body.paper-dark app-root .project-showcase::after {
+    background: rgb(141 235 244 / 0.12);
+  }
+
+  body.paper-dark app-root :is(
+    .project-stage,
+    .project-showcase-kicker,
+    .project-showcase-label,
+    .project-device-kicker
+  ) {
+    background: #1c283b;
+    color: #f5efe4;
+    border-color: #324866;
+    box-shadow: 2px 2px 0 #070c14;
+  }
+
+  body.paper-dark app-root :is(.project-hero-visual, .project-device-feature-stage, .project-mobile-preview-shell) .project-nav-btn {
+    background: #162033;
+    color: #f5efe4;
+    border-color: #324866;
+    box-shadow: 2px 2px 0 #070c14;
+  }
+
+  body.paper-dark app-root :is(.project-hero-visual, .project-device-feature-stage, .project-mobile-preview-shell) .project-nav-btn:hover {
+    background: #223149;
+  }
+
+  body.paper-dark app-root .proof-link,
+  body.paper-dark app-root .featured-gallery-btn {
+    border-color: #324866;
+    box-shadow: 2px 2px 0 #070c14;
+  }
+
+  body.paper-dark app-root .proof-link {
+    background: #1b2739;
+    color: #f5efe4;
+  }
+
+  body.paper-dark app-root .proof-primary,
+  body.paper-dark app-root .proof-docs,
+  body.paper-dark app-root .featured-gallery-btn {
+    background: linear-gradient(180deg, #5d4d20 0%, #473918 100%);
+    color: #fff3cc;
+    border-color: #a58a38;
+  }
+
+  body.paper-dark app-root .proof-live,
+  body.paper-dark app-root .featured-gallery-btn.is-secondary {
+    background: linear-gradient(180deg, #1c4651 0%, #16353d 100%);
+    color: #e9fdff;
+    border-color: #4fa5af;
+  }
+}
+
 h1,
 h2,
 h3 {

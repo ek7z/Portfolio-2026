@@ -388,8 +388,7 @@
     <span class="sep-line"></span>
   </div>
 
-  <div class="content-grid">
-    <section class="neo-card panel reveal delay-2">
+    <section class="neo-card panel reveal delay-2 experience-panel">
       <div class="section-title">
         <h2>Experience</h2>
       </div>
@@ -410,92 +409,172 @@
             [attr.aria-pressed]="activeExperienceFilter === filter.id"
             (click)="setExperienceFilter(filter.id)"
           >
-            {{ filter.label }}
-          </button>
-        }
+          {{ filter.label }}
+        </button>
+      }
       </div>
+
+      <div class="experience-support-grid">
+        <section class="neo-card experience-support-card cert-panel">
+          <div class="section-title">
+            <h3>Certifications</h3>
+          </div>
+          <div class="cert-overview">
+            @for (stat of certificationStats; track stat.label) {
+              <article class="cert-stat-card {{ stat.tone }}">
+                <span>{{ stat.label }}</span>
+                <strong>{{ stat.value }}</strong>
+              </article>
+            }
+          </div>
+          <ul class="cert-list">
+            @for (cert of certifications; track cert.title) {
+              <li class="cert-item">
+                <span class="cert-mark">{{ cert.mark }}</span>
+                <div class="cert-copy">
+                  <p class="cert-title">{{ cert.title }}</p>
+                  <p class="cert-meta">{{ cert.provider }} - {{ cert.date }}</p>
+                </div>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <section class="neo-card experience-support-card cert-application">
+          <div class="section-title">
+            <h3>Applied Learning</h3>
+            <span class="neo-chip chip-cyan">Field Use</span>
+          </div>
+
+          <div class="cert-overview">
+            @for (signal of certSignals; track signal.label) {
+              <article class="cert-stat-card {{ signal.tone }}">
+                <span>{{ signal.label }}</span>
+                <strong>{{ signal.value }}</strong>
+              </article>
+            }
+          </div>
+
+          <ul class="cert-note-list">
+            @for (note of certApplicationNotes; track note) {
+              <li>{{ note }}</li>
+            }
+          </ul>
+        </section>
+      </div>
+
       <div class="timeline">
         @for (exp of filteredExperiences; track exp.role) {
-          <article class="timeline-item reveal {{ exp.tone }}">
-            <div class="timeline-head">
-              <h3>{{ exp.role }}</h3>
-              <p>{{ exp.period }}</p>
-            </div>
-            <p class="timeline-company">{{ exp.company }}</p>
-            <div class="exp-badges">
-              @for (badge of exp.badges; track badge) {
-                <span>{{ badge }}</span>
+          <article class="timeline-item reveal {{ exp.tone }}" [class.is-current]="exp.isCurrent" [attr.data-track]="exp.track">
+            <div class="timeline-rail">
+              <span class="timeline-rail-label">Timeline</span>
+              <div class="timeline-period-card">
+                <strong>{{ exp.period }}</strong>
+              </div>
+              <span class="timeline-track-pill" [attr.data-track]="exp.track">{{ getExperienceTrackLabel(exp.track) }}</span>
+              @if (exp.isCurrent) {
+                <span class="timeline-current-pill">Current</span>
               }
             </div>
-            <ul class="timeline-points">
-              @for (item of getExperienceHighlights(exp); track item) {
-                <li>{{ item }}</li>
-              }
-            </ul>
-            @if (shouldShowExperienceToggle(exp)) {
-              <button
-                class="timeline-toggle"
-                type="button"
-                [attr.aria-expanded]="isExperienceExpanded(exp.role)"
-                (click)="toggleExperienceHighlights(exp.role)"
-              >
-                {{ isExperienceExpanded(exp.role) ? 'Show Less' : 'Show More' }}
-              </button>
-            }
+
+            <div class="timeline-body">
+              <div class="timeline-head">
+                <div class="timeline-role-wrap">
+                  <h3>{{ exp.role }}</h3>
+                  <p class="timeline-company">{{ exp.company }}</p>
+                </div>
+              </div>
+
+              <div class="exp-proof-row">
+                @for (signal of exp.proofSignals; track signal.label) {
+                  <article class="exp-proof-signal">
+                    <span>{{ signal.label }}</span>
+                    <strong>{{ signal.value }}</strong>
+                  </article>
+                }
+              </div>
+
+              <div class="exp-case-grid">
+                @for (entry of getExperienceCaseEntries(exp); track entry.label) {
+                  <article class="exp-case-card">
+                    <span class="exp-case-label">{{ entry.label }}</span>
+                    <p>{{ entry.value }}</p>
+                  </article>
+                }
+              </div>
+
+              <div class="exp-badges">
+                @for (badge of getExperienceBadgePreview(exp); track badge) {
+                  <span>{{ badge }}</span>
+                }
+
+                @if (getExperienceBadgeOverflowCount(exp) > 0) {
+                  <span class="exp-badge-more">+{{ getExperienceBadgeOverflowCount(exp) }} more</span>
+                }
+              </div>
+
+              <div class="timeline-outcomes">
+                <div class="timeline-outcome-block is-primary">
+                  <span class="timeline-block-label">Selected Outcomes</span>
+                  <ul class="timeline-points is-selected">
+                    @for (item of getExperienceSelectedOutcomes(exp); track item) {
+                      <li>{{ item }}</li>
+                    }
+                  </ul>
+                </div>
+
+                @if (isExperienceExpanded(exp.role) && getExperienceTechnicalDetails(exp).length > 0) {
+                  <div class="timeline-outcome-block is-secondary">
+                    <span class="timeline-block-label">Technical Depth</span>
+                    <ul class="timeline-points is-detailed">
+                      @for (item of getExperienceTechnicalDetails(exp); track item) {
+                        <li>{{ item }}</li>
+                      }
+                    </ul>
+                  </div>
+                }
+              </div>
+
+              <div class="timeline-footer">
+                @if (exp.relatedWork.length > 0) {
+                  <div class="exp-related-row">
+                    <span class="timeline-block-label">Related Work</span>
+                    <div class="exp-related-links">
+                      @for (item of exp.relatedWork; track item.label) {
+                        @if (item.projectTitle) {
+                          <button
+                            class="exp-related-link"
+                            type="button"
+                            [attr.aria-label]="'Open related project ' + item.label"
+                            (click)="openExperienceRelatedProject(item.projectTitle)"
+                          >
+                            <span>{{ item.label }}</span>
+                            <span class="exp-related-arrow" aria-hidden="true">&#8599;</span>
+                          </button>
+                        } @else {
+                          <span class="exp-related-link is-static">{{ item.label }}</span>
+                        }
+                      }
+                    </div>
+                  </div>
+                }
+
+                @if (shouldShowExperienceToggle(exp)) {
+                  <button
+                    class="timeline-toggle"
+                    type="button"
+                    [attr.aria-expanded]="isExperienceExpanded(exp.role)"
+                    (click)="toggleExperienceHighlights(exp.role)"
+                  >
+                    {{ isExperienceExpanded(exp.role) ? 'Hide Technical Detail' : 'Show Technical Detail' }}
+                  </button>
+                }
+              </div>
+            </div>
           </article>
         }
       </div>
     </section>
-
-    <aside class="right-rail">
-      <section class="neo-card panel cert-panel reveal delay-3">
-        <div class="section-title">
-          <h2>Certifications</h2>
-        </div>
-        <div class="cert-overview reveal">
-          @for (stat of certificationStats; track stat.label) {
-            <article class="cert-stat-card {{ stat.tone }}">
-              <span>{{ stat.label }}</span>
-              <strong>{{ stat.value }}</strong>
-            </article>
-          }
-        </div>
-        <ul class="cert-list">
-          @for (cert of certifications; track cert.title) {
-            <li class="cert-item reveal">
-              <span class="cert-mark">{{ cert.mark }}</span>
-              <div class="cert-copy">
-                <p class="cert-title">{{ cert.title }}</p>
-                <p class="cert-meta">{{ cert.provider }} - {{ cert.date }}</p>
-              </div>
-            </li>
-          }
-        </ul>
-      </section>
-
-      <section class="neo-card panel cert-application reveal delay-3">
-        <div class="section-title">
-          <h3>Applied Learning</h3>
-          <span class="neo-chip chip-cyan">FIELD USE</span>
-        </div>
-
-        <div class="cert-overview">
-          @for (signal of certSignals; track signal.label) {
-            <article class="cert-stat-card {{ signal.tone }}">
-              <span>{{ signal.label }}</span>
-              <strong>{{ signal.value }}</strong>
-            </article>
-          }
-        </div>
-
-        <ul class="cert-note-list">
-          @for (note of certApplicationNotes; track note) {
-            <li>{{ note }}</li>
-          }
-        </ul>
-      </section>
-    </aside>
-  </div>
 
   <div class="section-separator sep-pink reveal" aria-hidden="true">
     <span class="sep-line"></span>
@@ -503,7 +582,7 @@
     <span class="sep-line"></span>
   </div>
 
-  <section id="projects" class="neo-card panel reveal delay-3">
+  <section id="projects" class="neo-card panel">
     <div class="section-title">
       <h2>Projects</h2>
       <span class="neo-chip chip-cyan">REAL CLIENT WORK</span>
@@ -511,22 +590,9 @@
     <div class="project-intro-bar reveal">
       <p>Selected systems across enterprise delivery, freelance builds, and academic products.</p>
     </div>
-    <div class="filter-row project-filter-row reveal">
-      @for (filter of projectFilters; track filter.id) {
-        <button
-          class="filter-chip"
-          type="button"
-          [class.is-active]="activeProjectFilter === filter.id"
-          [attr.aria-pressed]="activeProjectFilter === filter.id"
-          (click)="setProjectFilter(filter.id)"
-        >
-          {{ filter.label }}
-        </button>
-      }
-    </div>
     <div class="projects-desktop-shell">
     @if (featuredProject; as project) {
-      <article class="project-hero-card neo-card reveal {{ project.tone }}">
+      <article class="project-hero-card neo-card reveal {{ project.tone }}" [class.is-compact-visual]="project.featuredVisualStyle === 'compact'">
         <div class="project-hero-copy">
           <div class="project-hero-head">
             <div class="project-title-wrap">
@@ -539,32 +605,25 @@
             <span class="project-stage">{{ project.stage }}</span>
           </div>
 
-          <div class="featured-project-highlights">
-            @for (metric of project.impactMetrics.slice(0, 2); track metric) {
-              <span class="project-impact-chip">{{ metric }}</span>
+          <div class="project-case-brief is-featured">
+            @for (entry of getProjectCaseEntries(project); track entry.label) {
+              <article class="project-case-item">
+                <span class="project-case-label">{{ entry.label }}</span>
+                <p>{{ entry.value }}</p>
+              </article>
             }
           </div>
 
-          <p class="project-hero-lead">{{ project.description }}</p>
-
-          <div class="project-hero-result">
-            <span>Outcome</span>
-            <p>{{ project.result }}</p>
-          </div>
-
-          <div class="project-hero-meta">
-            <article>
-              <span>Role</span>
-              <strong>{{ project.role }}</strong>
-            </article>
-            <article>
-              <span>Impact</span>
-              <strong>{{ project.impact }}</strong>
-            </article>
+          <div class="project-proof-signals is-featured">
+            @for (signal of getProjectSignalEntries(project); track signal.label) {
+              <article class="project-proof-signal">
+                <span class="project-proof-signal-label">{{ signal.label }}</span>
+                <strong>{{ signal.value }}</strong>
+              </article>
+            }
           </div>
 
           <div class="project-hero-footer">
-            <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
             <div class="project-proof-row">
               @if (project.proofLinks.length > 0) {
                 @for (link of project.proofLinks; track link.url) {
@@ -612,24 +671,28 @@
                   <span></span>
                   <span></span>
                 </div>
-                <div
-                  class="project-screen-canvas project-hero-canvas"
-                  [class.is-mobile-shot]="activeMedia.frame === 'mobile'"
-                  [class.is-poster-shot]="activeMedia.frame === 'poster'"
-                  [attr.data-presentation]="activeMedia.presentation"
-                >
-                  <img
-                    class="project-screen-image"
-                    [style.objectFit]="getProjectMediaFit(activeMedia, 'hero')"
-                    [style.objectPosition]="getProjectMediaPosition(activeMedia, 'hero')"
-                    [style.transform]="getProjectMediaTransform(activeMedia, 'hero')"
-                    [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'hero')"
-                    [src]="activeMedia.src"
-                    [alt]="project.title + ' screenshot: ' + activeMedia.label"
-                    loading="lazy"
-                  />
+                  <div
+                    class="project-screen-canvas project-hero-canvas"
+                    [class.is-mobile-shot]="activeMedia.frame === 'mobile'"
+                    [class.is-poster-shot]="activeMedia.frame === 'poster'"
+                    [attr.data-presentation]="activeMedia.presentation"
+                  >
+                    <img
+                      class="project-screen-image project-media-image"
+                      [class.is-loaded]="isMediaLoaded(activeMedia.src)"
+                      [style.objectFit]="getProjectMediaFit(activeMedia, 'hero')"
+                      [style.objectPosition]="getProjectMediaPosition(activeMedia, 'hero')"
+                      [style.transform]="getProjectMediaTransform(activeMedia, 'hero')"
+                      [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'hero')"
+                      [src]="activeMedia.src"
+                      [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                      decoding="async"
+                      fetchpriority="high"
+                      loading="lazy"
+                      (load)="onMediaImageLoad(activeMedia.src)"
+                    />
+                  </div>
                 </div>
-              </div>
             </button>
 
             <div class="project-hero-screenbar">
@@ -680,21 +743,25 @@
             <span class="project-stage">{{ project.stage }}</span>
           </div>
 
-          <div class="featured-project-highlights">
-            @for (metric of project.impactMetrics.slice(0, 2); track metric) {
-              <span class="project-impact-chip">{{ metric }}</span>
+          <div class="project-case-brief">
+            @for (entry of getProjectCaseEntries(project); track entry.label) {
+              <article class="project-case-item">
+                <span class="project-case-label">{{ entry.label }}</span>
+                <p>{{ entry.value }}</p>
+              </article>
             }
           </div>
 
-          <p class="project-device-feature-lead">{{ project.description }}</p>
-
-          <div class="project-device-feature-result">
-            <span>Result</span>
-            <p>{{ project.result }}</p>
+          <div class="project-proof-signals">
+            @for (signal of getProjectSignalEntries(project); track signal.label) {
+              <article class="project-proof-signal">
+                <span class="project-proof-signal-label">{{ signal.label }}</span>
+                <strong>{{ signal.value }}</strong>
+              </article>
+            }
           </div>
 
           <div class="project-device-feature-footer">
-            <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
             <div class="project-proof-row">
               @if (project.proofLinks.length > 0) {
                 @for (link of project.proofLinks; track link.url) {
@@ -724,15 +791,31 @@
         <div class="project-device-feature-stage">
           @if (getProjectMediaByFrame(project, 'desktop'); as desktopMedia) {
             <button class="project-device-board is-desktop" type="button" (click)="openProjectGallery(project, getProjectMediaIndexByFrame(project, 'desktop'), 'desktop')">
-              <span class="project-device-kicker">Web Admin</span>
-              <img class="project-device-image" [src]="desktopMedia.src" [alt]="project.title + ' web admin preview'" loading="lazy" />
+              <span class="project-device-kicker">Admin Portal</span>
+              <img
+                class="project-device-image project-media-image"
+                [class.is-loaded]="isMediaLoaded(desktopMedia.src)"
+                [src]="desktopMedia.src"
+                [alt]="project.title + ' web admin preview'"
+                decoding="async"
+                loading="lazy"
+                (load)="onMediaImageLoad(desktopMedia.src)"
+              />
             </button>
           }
 
           @if (getProjectMediaByFrame(project, 'mobile'); as mobileMedia) {
             <button class="project-device-board is-mobile" type="button" (click)="openProjectGallery(project, getProjectMediaIndexByFrame(project, 'mobile'), 'mobile')">
-              <span class="project-device-kicker">Mobile App</span>
-              <img class="project-device-image" [src]="mobileMedia.src" [alt]="project.title + ' mobile preview'" loading="lazy" />
+              <span class="project-device-kicker">Customer App</span>
+              <img
+                class="project-device-image project-media-image"
+                [class.is-loaded]="isMediaLoaded(mobileMedia.src)"
+                [src]="mobileMedia.src"
+                [alt]="project.title + ' mobile preview'"
+                decoding="async"
+                loading="lazy"
+                (load)="onMediaImageLoad(mobileMedia.src)"
+              />
             </button>
           }
         </div>
@@ -761,6 +844,24 @@
               <span class="project-stage">{{ project.stage }}</span>
             </div>
 
+            <div class="project-case-brief is-compact">
+              @for (entry of getProjectCaseEntries(project); track entry.label) {
+                <article class="project-case-item">
+                  <span class="project-case-label">{{ entry.label }}</span>
+                  <p>{{ entry.value }}</p>
+                </article>
+              }
+            </div>
+
+            <div class="project-proof-signals is-compact">
+              @for (signal of getProjectSignalEntries(project); track signal.label) {
+                <article class="project-proof-signal">
+                  <span class="project-proof-signal-label">{{ signal.label }}</span>
+                  <strong>{{ signal.value }}</strong>
+                </article>
+              }
+            </div>
+
             @if (getActiveProjectMedia(project); as activeMedia) {
               <button
                 class="project-showcase-preview"
@@ -770,7 +871,8 @@
                 (click)="openProjectGallery(project)"
               >
                 <img
-                  class="project-showcase-image"
+                  class="project-showcase-image project-media-image"
+                  [class.is-loaded]="isMediaLoaded(activeMedia.src)"
                   [attr.data-presentation]="activeMedia.presentation"
                   [style.objectFit]="getProjectMediaFit(activeMedia, 'card')"
                   [style.objectPosition]="getProjectMediaPosition(activeMedia, 'card')"
@@ -778,15 +880,14 @@
                   [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'card')"
                   [src]="activeMedia.src"
                   [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                  decoding="async"
                   loading="lazy"
+                  (load)="onMediaImageLoad(activeMedia.src)"
                 />
               </button>
             }
 
-            <p class="project-showcase-summary">{{ project.result }}</p>
-
             <div class="project-card-action-row">
-              <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
               <div class="project-proof-row">
                 @if (project.proofLinks.length > 0) {
                   @for (link of project.proofLinks; track link.url) {
@@ -843,16 +944,25 @@
               <span class="project-stage">{{ project.stage }}</span>
             </div>
 
-            <div class="project-note-copy">
-              <p class="project-note-lead">{{ project.description }}</p>
-              <div class="project-note-result-box">
-                <span>Outcome</span>
-                <p>{{ project.result }}</p>
-              </div>
+            <div class="project-case-brief is-compact">
+              @for (entry of getProjectCaseEntries(project); track entry.label) {
+                <article class="project-case-item">
+                  <span class="project-case-label">{{ entry.label }}</span>
+                  <p>{{ entry.value }}</p>
+                </article>
+              }
+            </div>
+
+            <div class="project-proof-signals is-compact">
+              @for (signal of getProjectSignalEntries(project); track signal.label) {
+                <article class="project-proof-signal">
+                  <span class="project-proof-signal-label">{{ signal.label }}</span>
+                  <strong>{{ signal.value }}</strong>
+                </article>
+              }
             </div>
 
             <div class="project-card-action-row">
-              <span class="project-stack-summary">{{ getProjectStackSummary(project) }}</span>
               <div class="project-proof-row">
                 @if (project.proofLinks.length > 0) {
                   @for (link of project.proofLinks; track link.url) {
@@ -894,6 +1004,24 @@
             <span class="project-stage">{{ project.stage }}</span>
           </div>
 
+          <div class="project-case-brief is-mobile">
+            @for (entry of getProjectCaseEntries(project); track entry.label) {
+              <article class="project-case-item">
+                <span class="project-case-label">{{ entry.label }}</span>
+                <p>{{ entry.value }}</p>
+              </article>
+            }
+          </div>
+
+          <div class="project-proof-signals is-mobile">
+            @for (signal of getProjectSignalEntries(project); track signal.label) {
+              <article class="project-proof-signal">
+                <span class="project-proof-signal-label">{{ signal.label }}</span>
+                <strong>{{ signal.value }}</strong>
+              </article>
+            }
+          </div>
+
           @if (getActiveProjectMedia(project); as activeMedia) {
             <div class="project-mobile-preview-shell">
               <button
@@ -913,14 +1041,17 @@
                     [attr.data-presentation]="activeMedia.presentation"
                   >
                     <img
-                      class="project-screen-image"
+                      class="project-screen-image project-media-image"
+                      [class.is-loaded]="isMediaLoaded(activeMedia.src)"
                       [style.objectFit]="getProjectMediaFit(activeMedia, 'hero')"
                       [style.objectPosition]="getProjectMediaPosition(activeMedia, 'hero')"
                       [style.transform]="getProjectMediaTransform(activeMedia, 'hero')"
                       [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'hero')"
                       [src]="activeMedia.src"
                       [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                      decoding="async"
                       loading="lazy"
+                      (load)="onMediaImageLoad(activeMedia.src)"
                     />
                   </div>
                 </div>
@@ -936,15 +1067,6 @@
               </div>
             </div>
           }
-
-          <div class="project-mobile-summary-card">
-            <p class="project-mobile-lead">{{ project.description }}</p>
-            <div class="project-mobile-chipline">
-              @for (metric of project.impactMetrics.slice(0, 2); track metric) {
-                <span class="project-impact-chip">{{ metric }}</span>
-              }
-            </div>
-          </div>
 
           <div class="project-mobile-action-row">
             @if (project.proofLinks.length > 0) {
@@ -964,28 +1086,11 @@
                 </a>
               }
             }
-            <details class="project-mobile-details">
-              <summary>View Case</summary>
-              <div class="project-mobile-details-body">
-                <div class="project-mobile-result">
-                  <span>Outcome</span>
-                  <p>{{ project.result }}</p>
-                </div>
-
-                <div class="project-mobile-meta">
-                  <article>
-                    <span>Role</span>
-                    <strong>{{ project.role }}</strong>
-                  </article>
-                  <article>
-                    <span>Impact</span>
-                    <strong>{{ project.impact }}</strong>
-                  </article>
-                </div>
-
-                <span class="project-stack-summary project-stack-summary-muted">{{ getProjectStackSummary(project) }}</span>
-              </div>
-            </details>
+            @if (project.media.length > 0) {
+              <button class="featured-gallery-btn is-secondary" type="button" (click)="openProjectGallery(project, getProjectMediaIndex(project))">
+                View Gallery
+              </button>
+            }
           </div>
         </article>
       }
@@ -1003,7 +1108,23 @@
             <span class="project-stage">{{ project.stage }}</span>
           </div>
 
-          <p class="project-mobile-lead">{{ project.description }}</p>
+          <div class="project-case-brief is-mobile">
+            @for (entry of getProjectCaseEntries(project); track entry.label) {
+              <article class="project-case-item">
+                <span class="project-case-label">{{ entry.label }}</span>
+                <p>{{ entry.value }}</p>
+              </article>
+            }
+          </div>
+
+          <div class="project-proof-signals is-mobile">
+            @for (signal of getProjectSignalEntries(project); track signal.label) {
+              <article class="project-proof-signal">
+                <span class="project-proof-signal-label">{{ signal.label }}</span>
+                <strong>{{ signal.value }}</strong>
+              </article>
+            }
+          </div>
 
           <div class="project-mobile-device-switcher">
             <button
@@ -1012,7 +1133,7 @@
               [class.is-active]="getActiveMobileDeviceFrame(project) === 'desktop'"
               (click)="setActiveMobileDeviceFrame(project, 'desktop')"
             >
-              Web Admin
+              Admin Portal
             </button>
             <button
               class="project-mobile-device-toggle"
@@ -1020,7 +1141,7 @@
               [class.is-active]="getActiveMobileDeviceFrame(project) === 'mobile'"
               (click)="setActiveMobileDeviceFrame(project, 'mobile')"
             >
-              Mobile App
+              Customer App
             </button>
           </div>
 
@@ -1032,64 +1153,45 @@
               (click)="openProjectGallery(project, getProjectMediaIndexByFrame(project, getActiveMobileDeviceFrame(project)), getActiveMobileDeviceFrame(project))"
             >
               <span class="project-device-kicker">
-                {{ getActiveMobileDeviceFrame(project) === 'mobile' ? 'Mobile App' : 'Web Admin' }}
+                {{ getActiveMobileDeviceFrame(project) === 'mobile' ? 'Customer App' : 'Admin Portal' }}
               </span>
-              <img class="project-device-image" [src]="activeMedia.src" [alt]="project.title + ' preview'" loading="lazy" />
+              <img
+                class="project-device-image project-media-image"
+                [class.is-loaded]="isMediaLoaded(activeMedia.src)"
+                [src]="activeMedia.src"
+                [alt]="project.title + ' preview'"
+                decoding="async"
+                loading="lazy"
+                (load)="onMediaImageLoad(activeMedia.src)"
+              />
             </button>
           }
 
-          <div class="project-mobile-summary-card">
-            <p class="project-mobile-lead">{{ project.description }}</p>
-            <div class="project-mobile-chipline">
-              @for (metric of project.impactMetrics.slice(0, 2); track metric) {
-                <span class="project-impact-chip">{{ metric }}</span>
-              }
-            </div>
-          </div>
-
           <div class="project-mobile-action-row">
+            @if (project.proofLinks.length > 0) {
+              @for (link of project.proofLinks.slice(0, 1); track link.url) {
+                <a
+                  class="proof-link proof-primary"
+                  [class.proof-live]="link.kind === 'live'"
+                  [class.proof-docs]="link.kind === 'docs'"
+                  [class.proof-repo]="link.kind === 'repo'"
+                  [href]="link.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  [attr.aria-label]="link.label + ' (opens in new tab)'"
+                >
+                  <span>{{ link.label }}</span>
+                  <span class="proof-link-arrow" aria-hidden="true">&#8599;</span>
+                </a>
+              }
+            }
             <button
               class="featured-gallery-btn is-secondary"
               type="button"
               (click)="openProjectGallery(project, getProjectMediaIndexByFrame(project, getActiveMobileDeviceFrame(project)), getActiveMobileDeviceFrame(project))"
             >
-              {{ getActiveMobileDeviceFrame(project) === 'mobile' ? 'View Mobile' : 'View Web' }}
+              {{ getActiveMobileDeviceFrame(project) === 'mobile' ? 'View Customer App' : 'View Admin Portal' }}
             </button>
-            <details class="project-mobile-details">
-              <summary>Project Result</summary>
-              <div class="project-mobile-details-body">
-                <div class="project-mobile-result">
-                  <span>Result</span>
-                  <p>{{ project.result }}</p>
-                </div>
-
-                <span class="project-stack-summary project-stack-summary-muted">{{ getProjectStackSummary(project) }}</span>
-
-                <div class="project-proof-row">
-                  @if (project.proofLinks.length > 0) {
-                    @for (link of project.proofLinks; track link.url) {
-                      <a
-                        class="proof-link"
-                        [class.proof-primary]="link.kind === 'live'"
-                        [class.proof-live]="link.kind === 'live'"
-                        [class.proof-docs]="link.kind === 'docs'"
-                        [class.proof-repo]="link.kind === 'repo'"
-                        [href]="link.url"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        [attr.aria-label]="link.label + ' (opens in new tab)'"
-                      >
-                        <span>{{ link.label }}</span>
-                        <span class="proof-link-arrow" aria-hidden="true">&#8599;</span>
-                      </a>
-                    }
-                  }
-                  <button class="featured-gallery-btn is-secondary" type="button" (click)="openProjectGallery(project)">
-                    View Gallery
-                  </button>
-                </div>
-              </div>
-            </details>
           </div>
         </article>
       }
@@ -1109,6 +1211,24 @@
                 <span class="project-stage">{{ project.stage }}</span>
               </div>
 
+              <div class="project-case-brief is-mobile">
+                @for (entry of getProjectCaseEntries(project); track entry.label) {
+                  <article class="project-case-item">
+                    <span class="project-case-label">{{ entry.label }}</span>
+                    <p>{{ entry.value }}</p>
+                  </article>
+                }
+              </div>
+
+              <div class="project-proof-signals is-mobile">
+                @for (signal of getProjectSignalEntries(project); track signal.label) {
+                  <article class="project-proof-signal">
+                    <span class="project-proof-signal-label">{{ signal.label }}</span>
+                    <strong>{{ signal.value }}</strong>
+                  </article>
+                }
+              </div>
+
               @if (getActiveProjectMedia(project); as activeMedia) {
                 <button
                   class="project-mobile-thumb-card"
@@ -1117,21 +1237,20 @@
                   (click)="openProjectGallery(project)"
                 >
                   <img
-                    class="project-mobile-thumb-image"
+                    class="project-mobile-thumb-image project-media-image"
+                    [class.is-loaded]="isMediaLoaded(activeMedia.src)"
                     [style.objectFit]="getProjectMediaFit(activeMedia, 'card')"
                     [style.objectPosition]="getProjectMediaPosition(activeMedia, 'card')"
                     [style.transform]="getProjectMediaTransform(activeMedia, 'card')"
                     [style.transformOrigin]="getProjectMediaTransformOrigin(activeMedia, 'card')"
-                  [src]="activeMedia.src"
-                  [alt]="project.title + ' screenshot: ' + activeMedia.label"
-                  loading="lazy"
-                />
+                    [src]="activeMedia.src"
+                    [alt]="project.title + ' screenshot: ' + activeMedia.label"
+                    decoding="async"
+                    loading="lazy"
+                    (load)="onMediaImageLoad(activeMedia.src)"
+                  />
                 </button>
               }
-
-              <div class="project-mobile-visual-copy">
-                <p class="project-mobile-summary">{{ project.result }}</p>
-              </div>
 
               <div class="project-mobile-footer">
                 <div class="project-proof-row">
@@ -1178,11 +1297,22 @@
                 <span class="project-stage">{{ project.stage }}</span>
               </div>
 
-              <p class="project-mobile-note-lead">{{ project.description }}</p>
+              <div class="project-case-brief is-mobile">
+                @for (entry of getProjectCaseEntries(project); track entry.label) {
+                  <article class="project-case-item">
+                    <span class="project-case-label">{{ entry.label }}</span>
+                    <p>{{ entry.value }}</p>
+                  </article>
+                }
+              </div>
 
-              <div class="project-mobile-result">
-                <span>Outcome</span>
-                <p>{{ project.result }}</p>
+              <div class="project-proof-signals is-mobile">
+                @for (signal of getProjectSignalEntries(project); track signal.label) {
+                  <article class="project-proof-signal">
+                    <span class="project-proof-signal-label">{{ signal.label }}</span>
+                    <strong>{{ signal.value }}</strong>
+                  </article>
+                }
               </div>
 
               <div class="project-mobile-footer">
@@ -1334,14 +1464,17 @@
             (touchend)="onGalleryTouchEnd($event)"
           >
             <img
-              class="project-gallery-image"
+              class="project-gallery-image project-media-image"
+              [class.is-loaded]="isMediaLoaded(galleryMedia.src)"
               [style.objectFit]="getProjectMediaFit(galleryMedia, 'gallery')"
               [style.objectPosition]="getProjectMediaPosition(galleryMedia, 'gallery')"
               [style.transform]="getGalleryImageTransform(galleryMedia)"
               [style.transformOrigin]="getProjectMediaTransformOrigin(galleryMedia, 'gallery')"
               [src]="galleryMedia.src"
               [alt]="galleryProject.title + ' gallery image: ' + galleryMedia.label"
+              decoding="async"
               loading="lazy"
+              (load)="onMediaImageLoad(galleryMedia.src)"
             />
 
             @if (shouldShowGalleryDots()) {
@@ -1362,10 +1495,11 @@
         }
 
         @if (shouldShowGalleryRail()) {
-        <div class="project-gallery-rail">
+        <div class="project-gallery-rail" #projectGalleryRailEl>
           @for (thumb of visibleGalleryThumbs; track thumb.media.src) {
             <button
               class="project-gallery-thumb"
+              #projectGalleryThumbEl
               type="button"
               [attr.data-presentation]="thumb.media.presentation"
               [attr.data-frame]="thumb.media.frame"
@@ -1373,7 +1507,15 @@
               [attr.aria-pressed]="getGalleryMediaIndex() === thumb.index"
               (click)="setActiveGalleryMedia(thumb.index)"
             >
-              <img [src]="thumb.media.src" [alt]="galleryProject.title + ' gallery thumbnail: ' + thumb.media.label" loading="lazy" />
+              <img
+                class="project-media-image"
+                [class.is-loaded]="isMediaLoaded(thumb.media.src)"
+                [src]="thumb.media.src"
+                [alt]="galleryProject.title + ' gallery thumbnail: ' + thumb.media.label"
+                decoding="async"
+                loading="lazy"
+                (load)="onMediaImageLoad(thumb.media.src)"
+              />
             </button>
           }
         </div>
