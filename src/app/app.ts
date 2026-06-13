@@ -2324,7 +2324,7 @@ export class App implements AfterViewInit, OnDestroy {
     this.catDomFrameIndex = safeNext;
   }
 
-  private queueBotReply(userText: string): void {
+  private async queueBotReply(userText: string): Promise<void> {
     if (typeof window === 'undefined') {
       return;
     }
@@ -2335,14 +2335,48 @@ export class App implements AfterViewInit, OnDestroy {
     }
 
     this.isBotTyping = true;
-    const responseDelay = Math.min(980, Math.max(380, userText.length * 14));
 
-    this.chatReplyTimer = window.setTimeout(() => {
-      const reply = this.buildChatReply(userText);
-      this.pushChatMessage('bot', reply.text, reply.cta);
-      this.isBotTyping = false;
-      this.chatReplyTimer = null;
-    }, responseDelay);
+    try {
+      // Map existing chat messages into Gemini API history format
+      const history = this.chatMessages.map((msg) => ({
+        role: msg.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }],
+      }));
+
+      // In local dev, send requests to http://localhost:4173 if running angular dev server on port 4200
+      const apiHost = window.location.hostname === 'localhost'
+        ? 'http://localhost:4173'
+        : 'https://ek7z-portfolio-backend.vercel.app';
+
+      const response = await fetch(`${apiHost}/api/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          history,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('API server error');
+      }
+
+      const data = await response.json();
+
+      // Wrap inside setTimeout to force Angular Zone.js change detection
+      window.setTimeout(() => {
+        this.pushChatMessage('bot', data.reply);
+        this.isBotTyping = false;
+      }, 0);
+    } catch (error) {
+      console.error('Chat error, falling back to local responses:', error);
+      window.setTimeout(() => {
+        const reply = this.buildChatReply(userText);
+        this.pushChatMessage('bot', reply.text, reply.cta);
+        this.isBotTyping = false;
+      }, 0);
+    }
   }
 
   private pushChatMessage(sender: 'bot' | 'user', text: string, cta?: ChatMessageCta): void {

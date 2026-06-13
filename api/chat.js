@@ -1,32 +1,26 @@
-import { createServer } from 'node:http';
-import { resolve } from 'node:path';
-import { readFileSync, existsSync } from 'node:fs';
-import handler from 'serve-handler';
+export default async function handler(req, res) {
+  // Enable CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
 
-// Load local .env file if it exists
-if (existsSync('.env')) {
-  try {
-    const envContent = readFileSync('.env', 'utf8');
-    for (const line of envContent.split('\n')) {
-      const parts = line.split('=');
-      if (parts.length >= 2) {
-        const key = parts[0].trim();
-        const value = parts.slice(1).join('=').trim().replace(/^['"]|['"]$/g, '');
-        if (key && value && !process.env[key]) {
-          process.env[key] = value;
-        }
-      }
-    }
-    console.log('Loaded API key from local .env file.');
-  } catch (err) {
-    console.warn('Failed to parse .env file:', err);
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
-}
 
-const port = Number(process.env.PORT || 4173);
-const publicDir = resolve('dist', 'jericho-portfolio', 'browser');
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
 
-const SYSTEM_INSTRUCTION = `You are a casual, chill, and friendly AI chatbot assistant representing Jericho Santos.
+  try {
+    const { history } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({ error: 'GEMINI_API_KEY is not configured.' });
+    }
+
+    const SYSTEM_INSTRUCTION = `You are a casual, chill, and friendly AI chatbot assistant representing Jericho Santos.
 Your goal is to answer questions about Jericho's portfolio, skills, education, experience, and contact details in a relaxed and approachable manner.
 Be conversational, concise (max 2-3 sentences per answer unless providing a list), and feel free to use light developer humor or emojis.
 
@@ -81,83 +75,36 @@ Personality and Guidelines:
 - If the user asks something completely off-topic (not related to Jericho's career or portfolio), politely and humorously steer them back.
 - If you don't know the answer, tell them they can reach Jericho directly via email at jericho.santos1015@gmail.com or call him at +63 9851569631.`;
 
-const server = createServer((request, response) => {
-  // CORS Headers for local development support
-  response.setHeader('Access-Control-Allow-Origin', '*');
-  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-
-  if (request.method === 'OPTIONS') {
-    response.writeHead(200);
-    response.end();
-    return;
-  }
-
-  // Intercept API Chat requests
-  if (request.url === '/api/chat' && request.method === 'POST') {
-    let body = '';
-    request.on('data', chunk => {
-      body += chunk.toString();
-    });
-
-    request.on('end', async () => {
-      try {
-        const { history } = JSON.parse(body);
-        const apiKey = process.env.GEMINI_API_KEY;
-
-        if (!apiKey) {
-          response.writeHead(500, { 'Content-Type': 'application/json' });
-          response.end(JSON.stringify({ error: 'GEMINI_API_KEY is not configured on the server.' }));
-          return;
-        }
-
-        // Prepare the Gemini API payload
-        const geminiPayload = {
-          contents: history,
-          systemInstruction: {
-            parts: [{ text: SYSTEM_INSTRUCTION }]
-          }
-        };
-
-        const geminiResponse = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(geminiPayload),
-          }
-        );
-
-        if (!geminiResponse.ok) {
-          const errData = await geminiResponse.text();
-          throw new Error(`Gemini API returned error: ${errData}`);
-        }
-
-        const data = await geminiResponse.json();
-        const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that. Please try again.";
-
-        response.writeHead(200, { 'Content-Type': 'application/json' });
-        response.end(JSON.stringify({ reply: replyText }));
-      } catch (error) {
-        console.error('API Error:', error);
-        response.writeHead(500, { 'Content-Type': 'application/json' });
-        response.end(JSON.stringify({ error: 'Failed to fetch AI response' }));
+    // Prepare the Gemini API payload
+    const geminiPayload = {
+      contents: history,
+      systemInstruction: {
+        parts: [{ text: SYSTEM_INSTRUCTION }]
       }
-    });
-    return;
+    };
+
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(geminiPayload),
+      }
+    );
+
+    if (!geminiResponse.ok) {
+      const errData = await geminiResponse.text();
+      throw new Error(`Gemini API returned error: ${errData}`);
+    }
+
+    const data = await geminiResponse.json();
+    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that. Please try again.";
+
+    return res.status(200).json({ reply: replyText });
+  } catch (error) {
+    console.error('API Error:', error);
+    return res.status(500).json({ error: 'Failed to fetch AI response' });
   }
-
-  // Static files server
-  return handler(request, response, {
-    public: publicDir,
-    cleanUrls: true,
-    rewrites: [{ source: '**', destination: '/index.html' }]
-  });
-});
-
-server.listen(port, '0.0.0.0', () => {
-  console.log(`Render static server running on 0.0.0.0:${port}`);
-  console.log(`Serving: ${publicDir}`);
-});
+}
