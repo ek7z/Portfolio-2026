@@ -2346,7 +2346,7 @@ export class App implements AfterViewInit, OnDestroy {
       // In local dev, send requests to http://localhost:4173 if running angular dev server on port 4200
       const apiHost = window.location.hostname === 'localhost'
         ? 'http://localhost:4173'
-        : 'https://ek7z-portfolio-backend.vercel.app';
+        : 'https://portfolio-2026-ten-alpha.vercel.app';
 
       const response = await fetch(`${apiHost}/api/chat`, {
         method: 'POST',
