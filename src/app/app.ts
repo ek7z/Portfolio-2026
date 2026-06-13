@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   HostListener,
@@ -407,7 +408,10 @@ export class App implements AfterViewInit, OnDestroy {
     'Hotfix Support',
   ];
 
-  constructor(private readonly sanitizer: DomSanitizer) {
+  constructor(
+    private readonly sanitizer: DomSanitizer,
+    private readonly cdr: ChangeDetectorRef
+  ) {
     this.resumeViewerSrc = this.sanitizer.bypassSecurityTrustResourceUrl(
       `${this.resumeFileUrl}#view=FitH`,
     );
@@ -2368,6 +2372,7 @@ export class App implements AfterViewInit, OnDestroy {
       window.setTimeout(() => {
         this.pushChatMessage('bot', data.reply);
         this.isBotTyping = false;
+        this.cdr.detectChanges();
       }, 0);
     } catch (error) {
       console.error('Chat error, falling back to local responses:', error);
@@ -2375,6 +2380,7 @@ export class App implements AfterViewInit, OnDestroy {
         const reply = this.buildChatReply(userText);
         this.pushChatMessage('bot', reply.text, reply.cta);
         this.isBotTyping = false;
+        this.cdr.detectChanges();
       }, 0);
     }
   }
